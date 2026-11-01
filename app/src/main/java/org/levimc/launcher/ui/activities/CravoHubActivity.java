@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import org.levimc.launcher.ui.theme.CravoTheme;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
@@ -28,7 +29,7 @@ public final class CravoHubActivity extends BaseActivity {
     private static final int BG = 0xFF0C0B0E;
     private static final int TEXT = 0xFFF4EDF3;
     private static final int MUTED = 0xFFAA9BA7;
-    private static final int CORAL = 0xFFD93652;
+    private CravoTheme theme;
 
     private LinearLayout content;
     private String section;
@@ -41,6 +42,7 @@ public final class CravoHubActivity extends BaseActivity {
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
+        theme = new CravoTheme(this);
         section = getIntent().getStringExtra(EXTRA_SECTION);
         if (section == null) section = "packs";
 
@@ -64,7 +66,7 @@ public final class CravoHubActivity extends BaseActivity {
         LinearLayout.LayoutParams brandParams = new LinearLayout.LayoutParams(0, -2, 1);
         brandParams.leftMargin = dp(13);
         header.addView(brand, brandParams);
-        TextView alpha = text("ALPHA 0.3", 10, CORAL, true);
+        TextView alpha = text("ALPHA 0.3.1", 10, theme.accent(), true);
         alpha.setPadding(dp(12), dp(7), dp(12), dp(7));
         alpha.setBackground(glass(13));
         header.addView(alpha);
@@ -91,20 +93,14 @@ public final class CravoHubActivity extends BaseActivity {
         return view;
     }
 
-    private GradientDrawable glass(int radius) {
-        GradientDrawable drawable = new GradientDrawable(GradientDrawable.Orientation.TL_BR,
-                new int[]{0xFF322330, 0xFF201B23, 0xFF16151A});
-        drawable.setCornerRadius(dp(radius));
-        drawable.setStroke(dp(1), 0xFF59404E);
-        return drawable;
-    }
+    private GradientDrawable glass(int radius) { return theme.glass(radius); }
 
     private void spacing(int dp) {
         content.addView(new View(this), new LinearLayout.LayoutParams(1, dp(dp)));
     }
 
     private void heading(String caption, String headline, String description) {
-        TextView overline = text(caption, 11, CORAL, true);
+        TextView overline = text(caption, 11, theme.accent(), true);
         overline.setLetterSpacing(.15f);
         content.addView(overline);
         spacing(12);

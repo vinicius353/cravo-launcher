@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import org.levimc.launcher.ui.theme.CravoTheme;
 import android.view.MotionEvent;
 import android.content.res.ColorStateList;
 import android.view.Gravity;
@@ -40,6 +41,10 @@ public final class CravoDashboard extends LinearLayout {
     private static final int WHITE = Color.rgb(246, 242, 246);
     private static final int MUTED = Color.rgb(165, 153, 164);
     private static final int LINE = Color.rgb(54, 45, 54);
+    private final CravoTheme theme;
+    private final TextView brandBadge;
+    private final TextView brandMark;
+    private final View headerDivider;
     private final Activity activity;
     private final Actions actions;
     private final SharedPreferences preferences;
@@ -54,9 +59,10 @@ public final class CravoDashboard extends LinearLayout {
     public CravoDashboard(Activity activity, Actions actions) {
         super(activity);
         this.activity = activity;
+        this.theme = new CravoTheme(activity);
         this.actions = actions;
         this.preferences = activity.getSharedPreferences("cravo_ui", Context.MODE_PRIVATE);
-        accent = preferences.getInt("accent", Color.rgb(217, 54, 82));
+        accent = theme.accent();
         reducedMotion = preferences.getBoolean("reduce_motion", false);
         setOrientation(VERTICAL);
         setBackgroundColor(BG);
@@ -70,20 +76,23 @@ public final class CravoDashboard extends LinearLayout {
         addView(header, new LayoutParams(-1, dp(67)));
 
         TextView monogram = text("C", 19, WHITE, true);
+        brandMark = monogram;
         monogram.setGravity(Gravity.CENTER);
-        monogram.setBackground(round(Color.rgb(53, 27, 37), 10, 0, 0));
+        monogram.setBackground(theme.solid(theme.accentSoft(), 10, theme.accentOutline()));
         header.addView(monogram, new LayoutParams(dp(36), dp(36)));
         TextView name = text("C R A V O", 19, WHITE, true);
         LayoutParams nameLp = new LayoutParams(0, -2, 1);
         nameLp.leftMargin = dp(11);
         header.addView(name, nameLp);
-        TextView alpha = text("ALPHA 0.3", 10, accent, true);
+        TextView alpha = text("ALPHA 0.3.1", 10, accent, true);
+        brandBadge = alpha;
         alpha.setPadding(dp(12), dp(7), dp(12), dp(7));
-        alpha.setBackground(round(Color.rgb(37, 24, 31), 24, 1, Color.rgb(82, 41, 56)));
+        alpha.setBackground(theme.solid(theme.accentSoft(), 24, theme.accentOutline()));
         header.addView(alpha);
 
         View separator = new View(activity);
-        separator.setBackgroundColor(Color.rgb(37, 32, 38));
+        headerDivider = separator;
+        separator.setBackgroundColor(theme.accentOutline());
         addView(separator, new LayoutParams(-1, dp(1)));
 
         ScrollView scroll = new ScrollView(activity);
@@ -124,13 +133,7 @@ public final class CravoDashboard extends LinearLayout {
         return d;
     }
 
-    private GradientDrawable glass(int radius) {
-        GradientDrawable d = new GradientDrawable(GradientDrawable.Orientation.TL_BR,
-                new int[]{Color.rgb(46, 31, 43), Color.rgb(28, 25, 33), Color.rgb(19, 19, 24)});
-        d.setCornerRadius(dp(radius));
-        d.setStroke(dp(1), Color.rgb(80, 54, 70));
-        return d;
-    }
+    private GradientDrawable glass(int radius) { return theme.glass(radius); }
 
     private void touchMotion(View view) {
         view.setOnTouchListener((target, event) -> {
@@ -197,10 +200,10 @@ public final class CravoDashboard extends LinearLayout {
     }
 
     private void action(String label, Runnable onClick, boolean primary) {
-        TextView v = text(label, 16, primary ? WHITE : accent, true);
+        TextView v = text(label, 16, primary ? theme.onAccent() : accent, true);
         v.setGravity(Gravity.CENTER);
         v.setPadding(dp(15), dp(14), dp(15), dp(14));
-        v.setBackground(round(primary ? accent : Color.rgb(43, 27, 36), 15, primary ? 0 : 1, Color.rgb(83, 46, 58)));
+        v.setBackground(theme.solid(primary ? accent : theme.accentSoft(), 15, primary ? 0 : theme.accentOutline()));
         v.setOnClickListener(w -> onClick.run());
         touchMotion(v);
         LayoutParams lp = new LayoutParams(-1, dp(primary ? 60 : 51));
@@ -221,6 +224,11 @@ public final class CravoDashboard extends LinearLayout {
 
     private void render() {
         body.animate().cancel();
+        accent = theme.accent();
+        brandBadge.setTextColor(accent);
+        brandBadge.setBackground(theme.solid(theme.accentSoft(), 24, theme.accentOutline()));
+        brandMark.setBackground(theme.solid(theme.accentSoft(), 10, theme.accentOutline()));
+        headerDivider.setBackgroundColor(theme.accentOutline());
         body.removeAllViews();
         navigation.removeAllViews();
         switch (page) {
@@ -329,8 +337,8 @@ public final class CravoDashboard extends LinearLayout {
         addSpace(body, 15);
         LinearLayout dots = new LinearLayout(activity);
         body.addView(dots);
-        for (int color : new int[]{0xFFD93652, 0xFF9362CC, 0xFF318C8C, 0xFFB88942, 0xFF737985}) {
-            TextView dot = text(color == accent ? "✓" : "●", 18, WHITE, true);
+        for (int color : new int[]{0xFFF4F4F5, 0xFFD93652, 0xFF9362CC, 0xFF318C8C, 0xFFB88942, 0xFF737985}) {
+            TextView dot = text(color == accent ? "✓" : "●", 18, CravoTheme.luminance(color) > .38 ? 0xFF121117 : WHITE, true);
             dot.setGravity(Gravity.CENTER);
             dot.setBackground(round(color, 24, 0, 0));
             LayoutParams p = new LayoutParams(dp(42), dp(42));
@@ -338,8 +346,7 @@ public final class CravoDashboard extends LinearLayout {
             dots.addView(dot, p);
             dot.setOnClickListener(v -> {
                 accent = color;
-                preferences.edit().putInt("accent", color).apply();
-                new org.levimc.launcher.util.PersonalizationManager(activity).setAccentColor(color);
+                theme.setAccent(color);
                 render();
             });
         }
@@ -357,13 +364,13 @@ public final class CravoDashboard extends LinearLayout {
     private void renderSettings() {
         title("Ajustes", "Configurações e ferramentas de suporte.");
         card("🧾  Diagnóstico / Logcat", "Visualize, copie ou compartilhe os registros  ›", actions::openDiagnostics);
-        card("Migração da Alpha 0.2", "Na versão antiga, exporte backups em Instâncias; depois restaure no CRAVO 0.3. ›", actions::openVersions);
+        card("Migração da Alpha 0.2", "Da versão anterior, exporte backups em Instâncias; restaure nesta instalação. ›", actions::openVersions);
         card("Minecraft / Instâncias", "Selecionar ou importar versões  ›", actions::openVersions);
         card("Contas", "Gerenciar conta Microsoft / Xbox  ›", actions::openAccounts);
         card("Configurações avançadas", "Abrir ajustes existentes do LeviLauncher  ›", actions::openSettings);
         card("Ferramentas originais", "Acessar a interface anterior quando necessário  ›", actions::openAdvanced);
         addSpace(body, 5);
-        body.addView(text("CRAVO Alpha 0.3 · Apache 2.0 · LeviMC credits preserved", 11, MUTED, false));
+        body.addView(text("CRAVO Alpha 0.3.1 · Open-source licenses and credits", 11, MUTED, false));
     }
 
     private void addNavigation() {
@@ -376,7 +383,7 @@ public final class CravoDashboard extends LinearLayout {
             LinearLayout tab = new LinearLayout(activity);
             tab.setOrientation(VERTICAL);
             tab.setGravity(Gravity.CENTER);
-            if (active) tab.setBackground(round(Color.rgb(48, 27, 38), 12, 0, 0));
+            if (active) tab.setBackground(theme.solid(theme.accentSoft(), 12, 0));
             LayoutParams p = new LayoutParams(0, -1, 1);
             p.leftMargin = dp(2);
             p.rightMargin = dp(2);
