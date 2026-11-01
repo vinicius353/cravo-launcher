@@ -334,6 +334,10 @@ import okhttp3.OkHttpClient;
                      showCravoHome();
                      return;
                  }
+                 if (cravoDashboard != null && cravoDashboard.getVisibility() == View.VISIBLE
+                         && cravoDashboard.handleBack()) {
+                     return;
+                 }
                  org.levimc.launcher.ui.dialogs.CustomAlertDialog exitDialog = new org.levimc.launcher.ui.dialogs.CustomAlertDialog(MainActivity.this);
                  exitDialog.setTitleText(getString(org.levimc.launcher.R.string.dialog_title_exit_app))
                          .setMessage(getString(org.levimc.launcher.R.string.dialog_message_exit_app))
