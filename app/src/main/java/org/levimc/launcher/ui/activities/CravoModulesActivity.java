@@ -315,8 +315,9 @@ public final class CravoModulesActivity extends BaseActivity {
             config.setPadding(dp(10), dp(12), dp(10), dp(8));
             controls.addView(config);
             config.setOnClickListener(v -> {
-                Intent intent = new Intent(this, ModConfigActivity.class);
-                intent.putExtra("mod_filename", mod.getId());
+                Intent intent = new Intent(this, CravoModConfigActivity.class);
+                intent.putExtra(CravoModConfigActivity.EXTRA_MOD_ROOT, mod.getModRootPath());
+                intent.putExtra(CravoModConfigActivity.EXTRA_MOD_NAME, name);
                 startActivity(intent);
             });
         }
