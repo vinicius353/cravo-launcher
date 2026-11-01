@@ -51,6 +51,14 @@ public class ModMenuButton {
         try {
             buttonView = LayoutInflater.from(activity).inflate(R.layout.overlay_mod_menu_button, null);
             ImageButton btn = buttonView.findViewById(R.id.mod_menu_fab);
+            org.levimc.launcher.ui.theme.CravoTheme accentTheme =
+                    new org.levimc.launcher.ui.theme.CravoTheme(activity);
+            android.graphics.drawable.GradientDrawable cravoCircle =
+                    new android.graphics.drawable.GradientDrawable();
+            cravoCircle.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+            cravoCircle.setColor(accentTheme.accentSoft());
+            cravoCircle.setStroke(Math.max(1, accentTheme.dp(2)), accentTheme.accentOutline());
+            btn.setBackground(cravoCircle);
             
             float density = activity.getResources().getDisplayMetrics().density;
             int buttonSize = (int) (53 * density);
@@ -87,6 +95,14 @@ public class ModMenuButton {
         
         buttonView = LayoutInflater.from(activity).inflate(R.layout.overlay_mod_menu_button, null);
         ImageButton btn = buttonView.findViewById(R.id.mod_menu_fab);
+            org.levimc.launcher.ui.theme.CravoTheme accentTheme =
+                    new org.levimc.launcher.ui.theme.CravoTheme(activity);
+            android.graphics.drawable.GradientDrawable cravoCircle =
+                    new android.graphics.drawable.GradientDrawable();
+            cravoCircle.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+            cravoCircle.setColor(accentTheme.accentSoft());
+            cravoCircle.setStroke(Math.max(1, accentTheme.dp(2)), accentTheme.accentOutline());
+            btn.setBackground(cravoCircle);
         
         float density = activity.getResources().getDisplayMetrics().density;
         int buttonSize = (int) (48 * density);

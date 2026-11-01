@@ -126,7 +126,7 @@ public final class CravoWorkspaceActivity extends BaseActivity {
                 checked ? theme.accent() : CravoTheme.MUTED));
         card.addView(sw);
         sw.setOnCheckedChangeListener((button, active) -> {
-            button.setThumbTintList(android.content.res.ColorStateList.valueOf(
+            ((android.widget.Switch) button).setThumbTintList(android.content.res.ColorStateList.valueOf(
                     active ? theme.accent() : CravoTheme.MUTED));
             change.onCheckedChanged(button, active);
         });

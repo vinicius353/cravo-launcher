@@ -296,7 +296,7 @@ public final class CravoModulesActivity extends BaseActivity {
         toggle.setOnCheckedChangeListener((button, checked) -> {
             try {
                 mod.applyEnabled(checked);
-                button.setThumbTintList(android.content.res.ColorStateList.valueOf(
+                ((android.widget.Switch) button).setThumbTintList(android.content.res.ColorStateList.valueOf(
                         checked ? palette.accent() : CravoTheme.MUTED));
                 countLabel.setText("Preferência atualizada · " + mod.getName());
             } catch (Exception error) {
@@ -331,7 +331,7 @@ public final class CravoModulesActivity extends BaseActivity {
         toggle.setOnCheckedChangeListener((button, checked) -> {
             viewModel.setModEnabled(mod.getId(), checked);
             mod.setEnabled(checked);
-            button.setThumbTintList(android.content.res.ColorStateList.valueOf(
+            ((android.widget.Switch) button).setThumbTintList(android.content.res.ColorStateList.valueOf(
                     checked ? palette.accent() : CravoTheme.MUTED));
             countLabel.setText("Módulo alterado · " + name);
         });
