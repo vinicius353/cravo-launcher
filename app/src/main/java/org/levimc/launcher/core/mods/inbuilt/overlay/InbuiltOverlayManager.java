@@ -54,7 +54,7 @@ public class InbuiltOverlayManager {
     private FpsDisplayOverlay fpsDisplayOverlay;
     private CpsDisplayOverlay cpsDisplayOverlay;
     private ModMenuButton modMenuButton;
-    private ModMenuOverlay modMenuOverlay;
+    private CravoModMenuOverlay modMenuOverlay;
     private boolean modMenuOpenedFromButton;
     private HudOverlay hudOverlay;
     private BaseOverlayButton selectedHudEditorOverlay;
@@ -76,10 +76,10 @@ public class InbuiltOverlayManager {
         return instance;
     }
 
-    private ModMenuOverlay getOrCreateModMenuOverlay() {
+    private CravoModMenuOverlay getOrCreateCravoModMenuOverlay() {
         if (modMenuOverlay == null) {
-            modMenuOverlay = new ModMenuOverlay(activity);
-            modMenuOverlay.setCallback(new ModMenuOverlay.ModMenuCallback() {
+            modMenuOverlay = new CravoModMenuOverlay(activity);
+            modMenuOverlay.setCallback(new CravoModMenuOverlay.ModMenuCallback() {
                 @Override
                 public void onModToggled(String modId, boolean enabled) {
                 }
@@ -102,7 +102,7 @@ public class InbuiltOverlayManager {
             if (activity.isFinishing() || activity.isDestroyed()) return;
             releaseKeybinds();
             modMenuOpenedFromButton = false;
-            getOrCreateModMenuOverlay().show();
+            getOrCreateCravoModMenuOverlay().show();
         });
     }
 
@@ -132,7 +132,7 @@ public class InbuiltOverlayManager {
         }
         activity.runOnUiThread(() -> {
             if (activity.isFinishing() || activity.isDestroyed()) return;
-            ModMenuOverlay overlay = getOrCreateModMenuOverlay();
+            CravoModMenuOverlay overlay = getOrCreateCravoModMenuOverlay();
             if (overlay.isShowing()) {
                 modMenuOpenedFromButton = false;
                 overlay.hide();
