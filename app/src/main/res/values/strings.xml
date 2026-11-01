@@ -1099,4 +1099,11 @@
     <string name="bg_media_blur_unavailable">Android 12+</string>
     <string name="screenshot_saved">Screenshot saved</string>
     <string name="backup_select_downloads">Select the Downloads folder to save backups in Downloads/CRAVO Launcher/Backups.</string>
+    <string name="cravo_launch_brand">CRAVO</string>
+    <string name="cravo_launch_subtitle">MINECRAFT / NATIVE RUNTIME</string>
+    <string name="cravo_launch_log_title">LAUNCH DIAGNOSTICS</string>
+    <string name="cravo_launch_copy">Copy log</string>
+    <string name="cravo_launch_copy_done">Launch log copied</string>
+    <string name="cravo_launch_missing_library">A native library is missing. Inspect the instance and verify that your APK/APKS includes the splits for this device architecture.</string>
+    <string name="cravo_launch_loading_error_generic">Could not prepare this instance. Copy the launch log for diagnosis.</string>
 </resources>
