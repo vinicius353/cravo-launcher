@@ -366,8 +366,8 @@ public final class CravoDashboard extends LinearLayout {
         card("🧾  Diagnóstico / Logcat", "Visualize, copie ou compartilhe os registros  ›", actions::openDiagnostics);
         card("Migração da Alpha 0.2", "Da versão anterior, exporte backups em Instâncias; restaure nesta instalação. ›", actions::openVersions);
         card("Minecraft / Instâncias", "Selecionar ou importar versões  ›", actions::openVersions);
-        card("Contas", "Gerenciar conta Microsoft / Xbox  ›", actions::openAccounts);
-        card("Configurações avançadas", "Abrir ajustes existentes do LeviLauncher  ›", actions::openSettings);
+        card("Contas", "Gerenciar contas Microsoft / Xbox no CRAVO  ›", actions::openAccounts);
+        card("Configurações do CRAVO", "Tema, instâncias e preferências  ›", actions::openSettings);
         card("Ferramentas originais", "Acessar a interface anterior quando necessário  ›", actions::openAdvanced);
         addSpace(body, 5);
         body.addView(text("CRAVO Alpha 0.3.1 · Open-source licenses and credits", 11, MUTED, false));
