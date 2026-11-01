@@ -11,6 +11,10 @@ on:
       - "**"
   workflow_dispatch:
 
+concurrency:
+  group: cravo-android-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -140,16 +144,17 @@ jobs:
         if: env.HAS_GOOGLE_SERVICES == 'true'
         run: ./gradlew assembleDebug assembleBeta assembleRelease
 
-      - name: Compile Debug Without Firebase Secrets
+      - name: Build Debug APK Without Firebase Secrets
         if: env.HAS_GOOGLE_SERVICES == 'false'
-        run: ./gradlew :app:compileDebugKotlin :app:compileDebugJavaWithJavac
+        run: ./gradlew :app:assembleDebug
 
-      - name: Upload Debug APK
-        if: env.HAS_GOOGLE_SERVICES == 'true'
+      - name: Upload CRAVO Debug APK
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: LeviLauncher-debug-apk
+          name: CRAVO-alpha02-debug-apk
           path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Upload R8 mappings
         if: env.HAS_GOOGLE_SERVICES == 'true'

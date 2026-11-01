@@ -9,6 +9,8 @@ import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.content.pm.ActivityInfo;
+import android.widget.FrameLayout;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -41,6 +43,7 @@ import org.levimc.launcher.settings.FeatureSettings;
 import org.levimc.launcher.ui.animation.DynamicAnim;
 import org.levimc.launcher.ui.dialogs.CustomAlertDialog;
 
+import org.levimc.launcher.ui.views.CravoDashboard;
 import org.levimc.launcher.ui.views.MainViewModel;
 import org.levimc.launcher.ui.views.MainViewModelFactory;
 import org.levimc.launcher.util.ApkImportManager;
@@ -116,6 +119,8 @@ import okhttp3.OkHttpClient;
     private OnBackPressedCallback onBackPressedCallback;
     private boolean launcherInitialized;
     private boolean postEulaFlowRunning;
+    private CravoDashboard cravoDashboard;
+    private TextView returnToCravo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,7 +131,7 @@ import okhttp3.OkHttpClient;
         setupNavBar();
         setupManagersAndHandlers();
         if (!isInstanceShortcutIntent()) {
-            new GithubReleaseUpdater(this, "LiteLDev", "LeviLaunchroid", permissionResultLauncher).checkUpdateOnLaunch();
+            new GithubReleaseUpdater(this, "vinicius353", "cravo-launcher", permissionResultLauncher).checkUpdateOnLaunch();
         }
         showEulaIfNeeded();
         setupOnBackPressedCallback();
@@ -144,6 +149,7 @@ import okhttp3.OkHttpClient;
 
         initAccountHeader();
         binding.getRoot().post(this::showPostEulaFlow);
+        setupCravoDashboard();
     }
 
     @Override
@@ -151,6 +157,122 @@ import okhttp3.OkHttpClient;
         super.onNewIntent(intent);
         setIntent(intent);
         handleVersionDependentIntent();
+    }
+
+    /**
+     * CRAVO is a native layer above the established LeviLauncher flows.
+     * Original views stay mounted so existing launch, import and account callbacks keep working.
+     */
+    private void setupCravoDashboard() {
+        cravoDashboard = new CravoDashboard(this, new CravoDashboard.Actions() {
+            @Override public void play() { launchGame(); }
+            @Override public void pickVersion() { showCravoVersionPicker(); }
+            @Override public void importApk() { startApkFilePicker(); }
+            @Override public void openVersions() { startActivity(new Intent(MainActivity.this, InstancesActivity.class)); }
+            @Override public void openMods() { openModsFullscreen(); }
+            @Override public void openContent() { openContentManagement(); }
+            @Override public void openCurseForge() { startActivity(new Intent(MainActivity.this, CurseForgeActivity.class)); }
+            @Override public void openSettings() { startActivity(new Intent(MainActivity.this, SettingsActivity.class)); }
+            @Override public void openAccounts() { startActivity(new Intent(MainActivity.this, AccountsActivity.class)); }
+            @Override public void openDiagnostics() { CravoDiagnostics.show(MainActivity.this); }
+            @Override public void openAdvanced() { showLegacyLauncher(); }
+        });
+
+        FrameLayout root = findViewById(android.R.id.content);
+        root.addView(cravoDashboard, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        returnToCravo = new TextView(this);
+        returnToCravo.setText("‹  CRAVO HOME");
+        returnToCravo.setTextSize(13);
+        returnToCravo.setTypeface(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD);
+        returnToCravo.setTextColor(Color.WHITE);
+        returnToCravo.setPadding(dpCravo(16), dpCravo(10), dpCravo(16), dpCravo(10));
+        GradientDrawable chip = new GradientDrawable();
+        chip.setColor(Color.rgb(177, 40, 68));
+        chip.setCornerRadius(dpCravo(14));
+        returnToCravo.setBackground(chip);
+        FrameLayout.LayoutParams chipLp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        chipLp.topMargin = dpCravo(6);
+        root.addView(returnToCravo, chipLp);
+        returnToCravo.setVisibility(View.GONE);
+        returnToCravo.setOnClickListener(v -> showCravoHome());
+        if (cravoDashboard != null) {
+            cravoDashboard.updateVersion(
+                    versionManager != null && versionManager.getSelectedVersion() != null
+                            ? getInstanceDisplayName(versionManager.getSelectedVersion()) : null,
+                    versionManager != null);
+        }
+    }
+
+    private int dpCravo(float value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
+    private void showLegacyLauncher() {
+        if (cravoDashboard != null) cravoDashboard.setVisibility(View.GONE);
+        if (returnToCravo != null) returnToCravo.setVisibility(View.VISIBLE);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+    }
+
+    private void showCravoHome() {
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+        if (cravoDashboard != null) {
+            cravoDashboard.setVisibility(View.VISIBLE);
+            refreshCravoVersion();
+        }
+        if (returnToCravo != null) returnToCravo.setVisibility(View.GONE);
+    }
+
+    private void refreshCravoVersion() {
+        if (cravoDashboard == null) return;
+        GameVersion selected = versionManager != null ? versionManager.getSelectedVersion() : null;
+        cravoDashboard.updateVersion(selected != null ? getInstanceDisplayName(selected) : null,
+                versionManager != null);
+    }
+
+    private void showCravoVersionPicker() {
+        if (!isVersionManagerReady()) return;
+        List<GameVersion> versions = new ArrayList<>();
+        List<GameVersion> installed = versionManager.getInstalledVersions();
+        List<GameVersion> custom = versionManager.getCustomVersions();
+        if (installed != null) versions.addAll(installed);
+        if (custom != null) versions.addAll(custom);
+        if (versions.isEmpty()) {
+            new android.app.AlertDialog.Builder(this)
+                    .setTitle("Nenhuma versão encontrada")
+                    .setMessage("Importe um APK ou APKS do Minecraft que você possui.")
+                    .setPositiveButton("Importar APK", (d, w) -> startApkFilePicker())
+                    .setNegativeButton("Cancelar", null)
+                    .show();
+            return;
+        }
+        String[] names = new String[versions.size()];
+        int checked = -1;
+        GameVersion selected = versionManager.getSelectedVersion();
+        for (int i = 0; i < versions.size(); i++) {
+            GameVersion v = versions.get(i);
+            names[i] = getInstanceDisplayName(v) + "  ·  " + getInstanceVersionText(v);
+            if (v == selected) checked = i;
+        }
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Selecionar versão")
+                .setSingleChoiceItems(names, checked, (dialog, index) -> {
+                    GameVersion chosen = versions.get(index);
+                    versionManager.selectVersion(chosen);
+                    if (viewModel != null) {
+                        viewModel.setCurrentVersion(chosen);
+                        viewModel.refreshMods();
+                    }
+                    setTextMinecraftVersion();
+                    refreshContentCounts();
+                    dialog.dismiss();
+                })
+                .setNeutralButton("Importar APK", (d, w) -> startApkFilePicker())
+                .setNegativeButton("Fechar", null)
+                .show();
     }
 
     private void closeLauncherRestartAfterFirstDraw() {
@@ -208,6 +330,14 @@ import okhttp3.OkHttpClient;
          onBackPressedCallback = new OnBackPressedCallback(true) {
              @Override
              public void handleOnBackPressed() {
+                 if (cravoDashboard != null && cravoDashboard.getVisibility() != View.VISIBLE) {
+                     showCravoHome();
+                     return;
+                 }
+                 if (cravoDashboard != null && cravoDashboard.getVisibility() == View.VISIBLE
+                         && cravoDashboard.handleBack()) {
+                     return;
+                 }
                  org.levimc.launcher.ui.dialogs.CustomAlertDialog exitDialog = new org.levimc.launcher.ui.dialogs.CustomAlertDialog(MainActivity.this);
                  exitDialog.setTitleText(getString(org.levimc.launcher.R.string.dialog_title_exit_app))
                          .setMessage(getString(org.levimc.launcher.R.string.dialog_message_exit_app))
@@ -523,6 +653,7 @@ import okhttp3.OkHttpClient;
             handleVersionDependentIntent();
         }
         refreshContentCounts();
+        refreshCravoVersion();
     }
 
     private void handleVersionDependentIntent() {
@@ -685,6 +816,7 @@ import okhttp3.OkHttpClient;
         if (binding != null && versionManager != null) {
             binding.launchButton.setEnabled(true);
         }
+        refreshCravoVersion();
     }
 
     @SuppressLint({"ClickableViewAccessibility", "UnsafeIntentLaunch"})
@@ -1083,6 +1215,7 @@ import okhttp3.OkHttpClient;
         GameVersion selectedVersion = versionManager.getSelectedVersion();
         String instanceName = selectedVersion != null ? getInstanceDisplayName(selectedVersion) : null;
         binding.textMinecraftVersion.setText(TextUtils.isEmpty(instanceName) ? getString(R.string.not_found_version) : instanceName);
+        refreshCravoVersion();
     }
 
     private boolean isVersionManagerReady() {
