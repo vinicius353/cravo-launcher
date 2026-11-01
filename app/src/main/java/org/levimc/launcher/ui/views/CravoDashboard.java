@@ -181,6 +181,12 @@ public final class CravoDashboard extends LinearLayout {
         body.addView(v, lp);
     }
 
+    public boolean handleBack() {
+        if ("home".equals(page)) return false;
+        setPage("home");
+        return true;
+    }
+
     private void setPage(String next) {
         page = next;
         render();
