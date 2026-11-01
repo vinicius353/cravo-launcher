@@ -158,6 +158,25 @@ public final class CravoHubActivity extends BaseActivity {
                     String display = version.displayName != null && !version.displayName.isEmpty() ?
                             version.displayName : version.directoryName;
                     String secondary = "Minecraft " + version.versionCode + (version.isInstalled ? " · instalado" : " · importado");
+                    if (!version.isInstalled) {
+                        card("Inspecionar · " + display,
+                                "Verificar APK base, splits, arquitetura e bibliotecas  ›",
+                                () -> {
+                                    org.levimc.launcher.core.versions.CravoPackageInspector.Result inspection =
+                                        org.levimc.launcher.core.versions.CravoPackageInspector.inspect(this, version);
+                                    new android.app.AlertDialog.Builder(this)
+                                        .setTitle(inspection.compatible ? "Estrutura compatível" : "Problema na instância")
+                                        .setMessage(inspection.description)
+                                        .setPositiveButton("OK", null)
+                                        .setNeutralButton("Copiar relatório", (d,w) -> {
+                                            android.content.ClipboardManager clipboard =
+                                                (android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+                                            if (clipboard != null) clipboard.setPrimaryClip(
+                                                android.content.ClipData.newPlainText("CRAVO inspection", inspection.description));
+                                        })
+                                        .show();
+                                });
+                    }
                     card(display, secondary, () -> {
                         manager.selectVersion(version);
                         Toast.makeText(this, "Versão selecionada: " + display, Toast.LENGTH_SHORT).show();
