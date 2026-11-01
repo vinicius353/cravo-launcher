@@ -167,6 +167,8 @@
             tools:ignore="DiscouragedApi" />
 
         <!-- Native CRAVO screens -->
+        <activity android:name=".ui.activities.CravoLibraryActivity"
+            android:screenOrientation="sensorPortrait" android:exported="false" />
         <activity android:name=".ui.activities.CravoWorkspaceActivity"
             android:screenOrientation="sensorPortrait" android:exported="false" />
         <activity android:name=".ui.activities.CravoModulesActivity"

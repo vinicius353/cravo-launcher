@@ -319,7 +319,7 @@ public final class CravoDashboard extends LinearLayout {
 
     private void renderPacks() {
         title("Packs", "Seu conteúdo de Minecraft, em um só lugar.");
-        card("Resource & Behavior Packs", "Abrir gerenciador de conteúdos  ›", actions::openContent);
+        card("Mundos, texturas e addons", "Abrir biblioteca CRAVO  ›", actions::openContent);
         card("CurseForge", "Explorar o catálogo integrado existente  ›", actions::openCurseForge);
         card("Módulos nativos", "Gerenciar mods e extensões instaladas  ›", actions::openMods);
     }

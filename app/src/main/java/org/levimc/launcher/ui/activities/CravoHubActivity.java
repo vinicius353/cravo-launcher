@@ -207,7 +207,7 @@ public final class CravoHubActivity extends BaseActivity {
                 () -> openContent(ContentListActivity.TYPE_BEHAVIOR_PACKS));
         card("Mundos", "Mundos salvos na instância atual.",
                 () -> openContent(ContentListActivity.TYPE_WORLDS));
-        card("Gerenciamento avançado", "Importação, skins, capturas e servidores.",
+        card("Compatibilidade de conteúdos", "Ferramentas legadas para funções ainda não migradas.",
                 () -> startActivity(new Intent(this, ContentManagementActivity.class)));
         card("CurseForge", "Descobrir novos projetos e abrir o catálogo oficial.",
                 () -> startActivity(new Intent(this, CurseForgeActivity.class)));
@@ -219,7 +219,7 @@ public final class CravoHubActivity extends BaseActivity {
             Toast.makeText(this, "Selecione uma versão do Minecraft primeiro", Toast.LENGTH_LONG).show();
             return;
         }
-        Intent intent = new Intent(this, ContentListActivity.class);
+        Intent intent = new Intent(this, CravoLibraryActivity.class);
         intent.putExtra(ContentListActivity.EXTRA_CONTENT_TYPE, type);
         startActivity(intent);
     }
