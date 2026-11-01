@@ -215,7 +215,7 @@ public final class CravoApkImportActivity extends BaseActivity {
             }
         }
         // Existing instance directories may not yet be loaded by VersionManager.
-        if (LauncherStorage.getVersionDir(this, name).exists()) {
+        if (new java.io.File(LauncherStorage.getMinecraftRoot(this), LauncherStorage.sanitizeProfileId(name)).exists()) {
             status.setText("Esta pasta já existe. Escolha outro nome para preservar seus dados.");
             return;
         }
