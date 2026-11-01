@@ -114,6 +114,16 @@ public final class CravoDashboard extends LinearLayout {
         render();
     }
 
+    public void refreshAppearance() {
+        boolean newReducedMotion = preferences.getBoolean("reduce_motion", false);
+        int currentAccent = theme.accent();
+        if (accent != currentAccent || reducedMotion != newReducedMotion) {
+            accent = currentAccent;
+            reducedMotion = newReducedMotion;
+            render();
+        }
+    }
+
     public void updateVersion(String displayName, boolean ready) {
         currentVersion = (displayName == null || displayName.trim().isEmpty())
                 ? "Nenhuma versão selecionada" : displayName;
@@ -368,7 +378,6 @@ public final class CravoDashboard extends LinearLayout {
         card("Minecraft / Instâncias", "Selecionar ou importar versões  ›", actions::openVersions);
         card("Contas", "Gerenciar contas Microsoft / Xbox no CRAVO  ›", actions::openAccounts);
         card("Configurações do CRAVO", "Tema, instâncias e preferências  ›", actions::openSettings);
-        card("Ferramentas originais", "Acessar a interface anterior quando necessário  ›", actions::openAdvanced);
         addSpace(body, 5);
         body.addView(text("CRAVO Alpha 0.3.1 · Open-source licenses and credits", 11, MUTED, false));
     }

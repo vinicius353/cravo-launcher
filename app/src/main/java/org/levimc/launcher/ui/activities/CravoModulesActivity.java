@@ -50,6 +50,7 @@ public final class CravoModulesActivity extends BaseActivity {
     private TextView countLabel;
     private EditText search;
     private String category = "TODOS";
+    public static final String EXTRA_FILTER = "cravo_filter";
     private final List<UnifiedMod> builtins = new ArrayList<>();
     private final List<Mod> nativePackages = new ArrayList<>();
     private MainViewModel viewModel;
@@ -61,6 +62,7 @@ public final class CravoModulesActivity extends BaseActivity {
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
+        if ("EXTERNOS".equals(getIntent().getStringExtra(EXTRA_FILTER))) category = "EXTERNOS";
         palette = new CravoTheme(this);
         reducedMotion = getSharedPreferences("cravo_ui", MODE_PRIVATE).getBoolean("reduce_motion", false);
         viewModel = new ViewModelProvider(this, new MainViewModelFactory(getApplication())).get(MainViewModel.class);

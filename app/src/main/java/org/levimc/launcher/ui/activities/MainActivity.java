@@ -821,6 +821,7 @@ import okhttp3.OkHttpClient;
             binding.launchButton.setEnabled(true);
         }
         refreshCravoVersion();
+        if (cravoDashboard != null) cravoDashboard.refreshAppearance();
     }
 
     @SuppressLint({"ClickableViewAccessibility", "UnsafeIntentLaunch"})
