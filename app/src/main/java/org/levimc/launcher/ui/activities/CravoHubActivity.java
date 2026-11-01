@@ -190,13 +190,7 @@ public final class CravoHubActivity extends BaseActivity {
             } else {
                 card("Carregando versões", "Volte e abra esta tela novamente.", () -> {});
             }
-            card("+  Importar APK / APKS", "Selecionar um arquivo do seu armazenamento.", () -> {
-                Intent intent = new Intent(this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                intent.putExtra("CRAVO_IMPORT_APK", true);
-                startActivity(intent);
-                finish();
-            });
+            card("+  Importar APK / APKS", "Abrir o importador nativo CRAVO.", () -> startActivity(new Intent(this, CravoApkImportActivity.class)));
             card("Backup e restauração", "Exportar ou restaurar instâncias de outras instalações.",
                     () -> startActivity(new Intent(this, InstancesActivity.class)));
             return;

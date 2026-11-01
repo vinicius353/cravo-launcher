@@ -171,7 +171,7 @@ import okhttp3.OkHttpClient;
         cravoDashboard = new CravoDashboard(this, new CravoDashboard.Actions() {
             @Override public void play() { launchGame(); }
             @Override public void pickVersion() { showCravoVersionPicker(); }
-            @Override public void importApk() { startApkFilePicker(); }
+            @Override public void importApk() { startActivity(new Intent(MainActivity.this, CravoApkImportActivity.class)); }
             @Override public void openVersions() { startActivity(CravoHubActivity.forSection(MainActivity.this, "versions")); }
             @Override public void openMods() { startActivity(CravoHubActivity.forSection(MainActivity.this, "mods")); }
             @Override public void openContent() { startActivity(CravoHubActivity.forSection(MainActivity.this, "packs")); }
