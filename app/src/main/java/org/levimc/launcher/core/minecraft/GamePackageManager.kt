@@ -11,9 +11,9 @@ import android.util.Log
 import org.levimc.launcher.core.versions.GameVersion
 import org.levimc.launcher.util.LauncherStorage
 import org.levimc.launcher.util.NativeBridgeHelper
+import org.levimc.launcher.util.NativeLibraryPublisher
 import org.levimc.launcher.util.NativeImageGuard
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.util.zip.ZipFile
@@ -130,13 +130,7 @@ class GamePackageManager private constructor(
         return cacheLibDir.absolutePath
     }
 
-    private fun getDeviceAbi(): String {
-        return Build.SUPPORTED_64_BIT_ABIS.firstOrNull {
-            it.contains("arm64-v8a") || it.contains("x86_64")
-        } ?: Build.SUPPORTED_32_BIT_ABIS.firstOrNull {
-            it.contains("armeabi-v7a") || it.contains("x86")
-        } ?: (Build.SUPPORTED_ABIS.firstOrNull() ?: "armeabi-v7a")
-    }
+    private fun getDeviceAbi(): String = MinecraftLauncher.getRuntimeAbi()
 
     private fun extractLibraries() {
         report("Preparing Minecraft library cache")
@@ -146,6 +140,8 @@ class GamePackageManager private constructor(
         }
 
         val apkFiles = collectApkFiles()
+        report("Native ABI: ${getDeviceAbi()}; cache: ${outputDir.absolutePath}")
+        apkFiles.forEach { report("Native source APK: ${it.absolutePath}") }
         val manifestString = buildExtractionManifest(apkFiles)
         val manifestFile = File(outputDir, ".extraction_manifest")
         val markerMatches = try {
@@ -262,93 +258,40 @@ class GamePackageManager private constructor(
         }
     }
 
-    private fun copyFromNativeDir(sourceDir: String, destDir: File) {
-        val source = File(sourceDir)
-        if (!source.exists()) {
-            Log.w(TAG, "Source native library directory does not exist: $sourceDir")
-            return
-        }
+    private fun publishLibrary(input: InputStream, output: File) {
+        NativeLibraryPublisher.publish(input, output) { staged -> processNativeImage(staged, true) }
+    }
 
+    private fun copyFromNativeDir(sourceDir: String, destDir: File) {
         extractableLibs.forEach { lib ->
-            val srcFile = File(source, lib)
-            val dstFile = File(destDir, lib)
-            if (srcFile.exists() && srcFile.length() > 0) {
-                try {
-                    srcFile.inputStream().use { input ->
-                        copyStreamToReadOnlyFile(input, dstFile)
-                    }
-                    report("Copied $lib from native lib directory")
-                    if (!processNativeImage(dstFile, true)) {
-                        dstFile.delete()
-                        throw IOException("Failed to prepare native library: ${dstFile.name}")
-                    }
-                    logFileOperation("Copied", lib)
-                } catch (e: Exception) {
-                    logFileOperation("Failed to copy", lib, e = e)
-                }
-            } else {
-                Log.w(TAG, "Library $lib not found in $sourceDir")
+            val source = File(sourceDir, lib)
+            if (source.isFile && source.length() > 0) {
+                source.inputStream().use { publishLibrary(it, File(destDir, lib)) }
+                report("Copied $lib from ${source.absolutePath}")
             }
         }
     }
 
     private fun extractFromApk(apkPath: String, outputDir: File, abi: String) {
-        val apkFile = File(apkPath)
-        if (!apkFile.exists()) {
-            Log.w(TAG, "APK file does not exist: $apkPath")
-            return
-        }
         try {
             ZipFile(apkPath).use { zip ->
-                val abiPath = "lib/$abi"
                 extractableLibs.forEach { lib ->
-                    val entry = zip.getEntry("$abiPath/$lib")
-                    if (entry == null) {
-                        return@forEach
-                    }
+                    val entry = zip.getEntry("lib/$abi/$lib") ?: return@forEach
+                    if (entry.isDirectory) return@forEach
                     val output = File(outputDir, lib)
-                    zip.getInputStream(entry).use { input ->
-                        copyStreamToReadOnlyFile(input, output)
+                    try {
+                        zip.getInputStream(entry).use { publishLibrary(it, output) }
+                    } catch (error: Exception) {
+                        throw IOException("CRAVO_NATIVE_PREPARE_FAILED: $apkPath!/${entry.name} -> " +
+                            "${output.absolutePath}: ${error.message}", error)
                     }
-                    report("Extracted $lib from ${apkFile.name} for $abi")
-                    if (!processNativeImage(output, true)) {
-                        output.delete()
-                        throw IOException("Failed to prepare native library: ${output.name}")
-                    }
+                    report("Prepared $apkPath!/${entry.name} -> ${output.absolutePath}")
                 }
             }
-        } catch (e: Exception) {
-            Log.w(TAG, "Failed to extract libraries from $apkPath: ${e.message}", e)
-            report("CRAVO library extraction failed for ${apkFile.name}: ${e.message}")
-        }
-    }
-
-    private fun copyStreamToReadOnlyFile(input: InputStream, output: File) {
-        ensureParentDirectory(output)
-        if (output.exists() && !output.delete()) {
-            throw IOException("Failed to replace existing file: ${output.absolutePath}")
-        }
-
-        val tempFile = File(output.absolutePath + ".tmp")
-        if (tempFile.exists()) tempFile.delete()
-
-        FileOutputStream(tempFile).use { out ->
-            input.copyTo(out)
-            out.fd.sync()
-        }
-
-        if (!tempFile.renameTo(output)) {
-            tempFile.delete()
-            throw IOException("Failed to rename temporary file to ${output.absolutePath}")
-        }
-
-        ensureReadOnly(output)
-    }
-
-    private fun ensureParentDirectory(file: File) {
-        val parent = file.parentFile ?: return
-        if (!parent.exists() && !parent.mkdirs()) {
-            throw IOException("Failed to create parent directory: ${parent.absolutePath}")
+        } catch (error: Exception) {
+            report(error.message ?: "Native extraction failed: $apkPath")
+            // Do not replace an extraction/preparation failure with a later missing-library error.
+            throw error
         }
     }
 
@@ -697,7 +640,7 @@ class GamePackageManager private constructor(
 
     companion object {
         private const val TAG = "GamePackageManager"
-        private const val EXTRACTOR_VERSION = 3
+        private const val EXTRACTOR_VERSION = 4
 
         @Volatile
         private var instance: GamePackageManager? = null

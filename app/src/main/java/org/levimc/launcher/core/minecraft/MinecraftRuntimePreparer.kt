@@ -71,7 +71,7 @@ object MinecraftRuntimePreparer {
         }
 
         listener.onProgress(12, "Preparing game files")
-        val gameManager = GamePackageManager.getInstance(context.applicationContext, version, trace, null)
+        val gameManager = GamePackageManager.getInstance(context.applicationContext, version, trace, listener)
         trace.mark("GamePackageManager ready")
 
         listener.onProgress(26, "Preparing launch")

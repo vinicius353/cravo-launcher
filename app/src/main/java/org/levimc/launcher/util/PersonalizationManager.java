@@ -289,7 +289,7 @@ public class PersonalizationManager {
         if (signInBtn instanceof Button) {
             Button btn = (Button) signInBtn;
             btn.setBackgroundTintList(ColorStateList.valueOf(accent));
-            btn.setTextColor(Color.WHITE);
+            btn.setTextColor(org.levimc.launcher.ui.theme.CravoTheme.onAccentColor(accent));
         }
     }
 
@@ -687,7 +687,7 @@ public class PersonalizationManager {
                     int currentTint = btn.getBackgroundTintList().getDefaultColor();
                     if (currentTint == defaultPrimary || currentTint == defaultSecondary || currentTint == defaultTertiary) {
                         btn.setBackgroundTintList(ColorStateList.valueOf(accentColor));
-                        btn.setTextColor(Color.WHITE);
+                        btn.setTextColor(org.levimc.launcher.ui.theme.CravoTheme.onAccentColor(accentColor));
                     }
                 }
             } catch (Exception ignored) {}
@@ -704,7 +704,7 @@ public class PersonalizationManager {
                         int gdColor = gd.getColor().getDefaultColor();
                         if (gdColor == defaultPrimary || gdColor == defaultSecondary || gdColor == defaultTertiary) {
                             gd.setColor(accentColor);
-                            btn.setTextColor(Color.WHITE);
+                            btn.setTextColor(org.levimc.launcher.ui.theme.CravoTheme.onAccentColor(accentColor));
                         }
                     }
                 } catch (Exception ignored) {}
