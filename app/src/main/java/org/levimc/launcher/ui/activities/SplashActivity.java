@@ -45,6 +45,7 @@ public class SplashActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         binding = ActivitySplashBinding.inflate(getLayoutInflater());
         binding.tvAppName.setText("CRAVO");
+        binding.tvAppName.setTextColor(0xFFD93652);
         setContentView(binding.getRoot());
 
         applySplashTheme();

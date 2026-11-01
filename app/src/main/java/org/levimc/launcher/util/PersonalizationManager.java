@@ -91,7 +91,7 @@ public class PersonalizationManager {
     }
 
     public int getAccentColor() {
-        return prefs.getInt(KEY_ACCENT_COLOR, PRESET_COLORS[0]);
+        return prefs.getInt(KEY_ACCENT_COLOR, 0xFFD93652);
     }
 
     public void setAccentColor(int color) {

@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.view.MotionEvent;
+import android.content.res.ColorStateList;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,6 +49,7 @@ public final class CravoDashboard extends LinearLayout {
     private String currentVersion = "Nenhuma versão selecionada";
     private boolean playReady;
     private int accent;
+    private boolean reducedMotion;
 
     public CravoDashboard(Activity activity, Actions actions) {
         super(activity);
@@ -54,6 +57,7 @@ public final class CravoDashboard extends LinearLayout {
         this.actions = actions;
         this.preferences = activity.getSharedPreferences("cravo_ui", Context.MODE_PRIVATE);
         accent = preferences.getInt("accent", Color.rgb(217, 54, 82));
+        reducedMotion = preferences.getBoolean("reduce_motion", false);
         setOrientation(VERTICAL);
         setBackgroundColor(BG);
         setClickable(true);
@@ -120,6 +124,27 @@ public final class CravoDashboard extends LinearLayout {
         return d;
     }
 
+    private GradientDrawable glass(int radius) {
+        GradientDrawable d = new GradientDrawable(GradientDrawable.Orientation.TL_BR,
+                new int[]{Color.rgb(46, 31, 43), Color.rgb(28, 25, 33), Color.rgb(19, 19, 24)});
+        d.setCornerRadius(dp(radius));
+        d.setStroke(dp(1), Color.rgb(80, 54, 70));
+        return d;
+    }
+
+    private void touchMotion(View view) {
+        view.setOnTouchListener((target, event) -> {
+            if (reducedMotion) return false;
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                target.animate().scaleX(.975f).scaleY(.975f).setDuration(95).start();
+            } else if (event.getActionMasked() == MotionEvent.ACTION_UP ||
+                    event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+                target.animate().scaleX(1f).scaleY(1f).setDuration(165).start();
+            }
+            return false;
+        });
+    }
+
     private TextView text(String value, int size, int color, boolean bold) {
         TextView v = new TextView(activity);
         v.setText(value);
@@ -155,7 +180,7 @@ public final class CravoDashboard extends LinearLayout {
         LinearLayout panel = new LinearLayout(activity);
         panel.setOrientation(VERTICAL);
         panel.setPadding(dp(18), dp(17), dp(18), dp(17));
-        panel.setBackground(round(SURFACE, 16, 1, LINE));
+        panel.setBackground(glass(18));
         TextView heading = text(title, 16, WHITE, true);
         panel.addView(heading);
         addSpace(panel, 7);
@@ -164,6 +189,7 @@ public final class CravoDashboard extends LinearLayout {
         panel.setClickable(true);
         panel.setFocusable(true);
         panel.setOnClickListener(v -> onClick.run());
+        touchMotion(panel);
         LayoutParams params = new LayoutParams(-1, -2);
         params.bottomMargin = dp(12);
         body.addView(panel, params);
@@ -176,6 +202,7 @@ public final class CravoDashboard extends LinearLayout {
         v.setPadding(dp(15), dp(14), dp(15), dp(14));
         v.setBackground(round(primary ? accent : Color.rgb(43, 27, 36), 15, primary ? 0 : 1, Color.rgb(83, 46, 58)));
         v.setOnClickListener(w -> onClick.run());
+        touchMotion(v);
         LayoutParams lp = new LayoutParams(-1, dp(primary ? 60 : 51));
         lp.bottomMargin = dp(12);
         body.addView(v, lp);
@@ -193,6 +220,7 @@ public final class CravoDashboard extends LinearLayout {
     }
 
     private void render() {
+        body.animate().cancel();
         body.removeAllViews();
         navigation.removeAllViews();
         switch (page) {
@@ -204,6 +232,14 @@ public final class CravoDashboard extends LinearLayout {
             default: renderHome(); break;
         }
         addNavigation();
+        if (!reducedMotion) {
+            body.setAlpha(0f);
+            body.setTranslationY(dp(9));
+            body.animate().alpha(1f).translationY(0f).setDuration(230).start();
+        } else {
+            body.setAlpha(1f);
+            body.setTranslationY(0f);
+        }
     }
 
     private void renderHome() {
@@ -248,7 +284,7 @@ public final class CravoDashboard extends LinearLayout {
         LinearLayout tile = new LinearLayout(activity);
         tile.setOrientation(VERTICAL);
         tile.setPadding(dp(16), dp(15), dp(12), dp(15));
-        tile.setBackground(round(SURFACE, 15, 1, LINE));
+        tile.setBackground(glass(17));
         LayoutParams p = new LayoutParams(0, dp(119), 1f);
         if (first) p.rightMargin = dp(12);
         parent.addView(tile, p);
@@ -258,6 +294,7 @@ public final class CravoDashboard extends LinearLayout {
         addSpace(tile, 7);
         tile.addView(text(desc, 11, MUTED, false));
         tile.setOnClickListener(v -> onClick.run());
+        touchMotion(tile);
     }
 
     private void renderProfiles() {
@@ -302,17 +339,25 @@ public final class CravoDashboard extends LinearLayout {
             dot.setOnClickListener(v -> {
                 accent = color;
                 preferences.edit().putInt("accent", color).apply();
+                new org.levimc.launcher.util.PersonalizationManager(activity).setAccentColor(color);
                 render();
             });
         }
         addSpace(body, 23);
         card("Dark Mode", "Visual escuro padrão · ativo", () -> {});
+        card(reducedMotion ? "✓  Reduzir animações" : "○  Reduzir animações",
+                "Desativa transições e efeito de pressão. Recomendado se preferir menor movimento.", () -> {
+                    reducedMotion = !reducedMotion;
+                    preferences.edit().putBoolean("reduce_motion", reducedMotion).apply();
+                    render();
+                });
         action("Voltar para início", () -> setPage("home"), false);
     }
 
     private void renderSettings() {
         title("Ajustes", "Configurações e ferramentas de suporte.");
         card("🧾  Diagnóstico / Logcat", "Visualize, copie ou compartilhe os registros  ›", actions::openDiagnostics);
+        card("Migração da Alpha 0.2", "Na versão antiga, exporte backups em Instâncias; depois restaure no CRAVO 0.3. ›", actions::openVersions);
         card("Minecraft / Instâncias", "Selecionar ou importar versões  ›", actions::openVersions);
         card("Contas", "Gerenciar conta Microsoft / Xbox  ›", actions::openAccounts);
         card("Configurações avançadas", "Abrir ajustes existentes do LeviLauncher  ›", actions::openSettings);
@@ -344,6 +389,7 @@ public final class CravoDashboard extends LinearLayout {
             caption.setGravity(Gravity.CENTER);
             tab.addView(caption);
             tab.setOnClickListener(v -> setPage(key));
+            touchMotion(tab);
         }
     }
 }

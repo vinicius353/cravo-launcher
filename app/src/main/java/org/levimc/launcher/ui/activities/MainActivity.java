@@ -169,8 +169,8 @@ import okhttp3.OkHttpClient;
             @Override public void pickVersion() { showCravoVersionPicker(); }
             @Override public void importApk() { startApkFilePicker(); }
             @Override public void openVersions() { startActivity(new Intent(MainActivity.this, InstancesActivity.class)); }
-            @Override public void openMods() { openModsFullscreen(); }
-            @Override public void openContent() { openContentManagement(); }
+            @Override public void openMods() { startActivity(new Intent(MainActivity.this, CravoModsHubActivity.class)); }
+            @Override public void openContent() { startActivity(new Intent(MainActivity.this, CravoContentHubActivity.class)); }
             @Override public void openCurseForge() { startActivity(new Intent(MainActivity.this, CurseForgeActivity.class)); }
             @Override public void openSettings() { startActivity(new Intent(MainActivity.this, SettingsActivity.class)); }
             @Override public void openAccounts() { startActivity(new Intent(MainActivity.this, AccountsActivity.class)); }
