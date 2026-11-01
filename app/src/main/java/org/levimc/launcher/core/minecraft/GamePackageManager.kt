@@ -65,17 +65,35 @@ class GamePackageManager private constructor(
 
     init {
         report("GamePackageManager init started")
-        val packageName = detectGamePackage() ?: throw IllegalStateException("Minecraft not found")
-        report("Detected Minecraft package: $packageName")
-        packageContext = context.createPackageContext(
-            packageName,
-            Context.CONTEXT_IGNORE_SECURITY or Context.CONTEXT_INCLUDE_CODE
-        )
-        
+        // Imported instances are independent of Android-installed game packages.
+        // Keep using the imported base/split APK files without rewriting any game APK.
         if (version != null && !version.isInstalled) {
-            applicationInfo = MinecraftLauncher(context).createFakeApplicationInfo(version, MinecraftLauncher.MC_PACKAGE_NAME)
+            val gameBase = File(version.versionDir, "base.apk.levi")
+            if (!gameBase.isFile || gameBase.length() == 0L) {
+                throw IllegalStateException("CRAVO_IMPORT_BASE_MISSING: base APK not found for " +
+                    version.directoryName)
+            }
+            try {
+                java.util.zip.ZipFile(gameBase).use { archive ->
+                    if (archive.getEntry("AndroidManifest.xml") == null)
+                        throw IllegalStateException("CRAVO_IMPORT_MANIFEST_MISSING")
+                }
+            } catch (e: java.util.zip.ZipException) {
+                throw IllegalStateException("CRAVO_IMPORT_ZIP_INVALID", e)
+            }
+            report("Using imported local package: " + gameBase.name)
+            packageContext = context
+            applicationInfo = MinecraftLauncher(context).createFakeApplicationInfo(
+                version, MinecraftLauncher.MC_PACKAGE_NAME)
             nativeLibDir = applicationInfo.nativeLibraryDir
         } else {
+            val packageName = detectGamePackage()
+                ?: throw IllegalStateException("CRAVO_INSTALLED_GAME_MISSING")
+            report("Detected installed Minecraft package: $packageName")
+            packageContext = context.createPackageContext(
+                packageName,
+                Context.CONTEXT_IGNORE_SECURITY or Context.CONTEXT_INCLUDE_CODE
+            )
             applicationInfo = packageContext.applicationInfo
             nativeLibDir = resolveNativeLibDir()
         }
@@ -657,6 +675,7 @@ class GamePackageManager private constructor(
     fun getApplicationInfo(): ApplicationInfo = applicationInfo
 
     fun getVersionName(): String? {
+        if (version != null && !version.isInstalled) return version.versionCode
         return try {
             context.packageManager.getPackageInfo(packageContext.packageName, 0).versionName
         } catch (e: Exception) {
