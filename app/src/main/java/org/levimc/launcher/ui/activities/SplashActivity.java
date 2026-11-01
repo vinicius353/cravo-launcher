@@ -44,6 +44,7 @@ public class SplashActivity extends BaseActivity {
         syncSystemLocale();
         super.onCreate(savedInstanceState);
         binding = ActivitySplashBinding.inflate(getLayoutInflater());
+        binding.tvAppName.setText("CRAVO");
         setContentView(binding.getRoot());
 
         applySplashTheme();
