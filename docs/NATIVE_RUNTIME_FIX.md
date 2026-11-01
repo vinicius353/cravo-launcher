@@ -39,3 +39,8 @@ ser migrados preservando seleção, backup, edição e opções técnicas. A mig
 completa não faz parte deste primeiro patch de runtime. CravoTheme já centraliza o
 accent; vermelho em escolhas de paleta e estados de erro não deve ser removido
 por substituição textual indiscriminada.
+
+## Tema
+Contraste de texto em botões preenchidos agora compara contraste claro/escuro
+para o accent escolhido, incluindo branco. A mesma função é usada nos controles
+herdados durante a migração. Isso não equivale à substituição integral dessas telas.

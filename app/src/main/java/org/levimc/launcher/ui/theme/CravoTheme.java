@@ -39,7 +39,16 @@ public final class CravoTheme {
 
     public int onAccent() {
         // WCAG-oriented contrast; white and other bright accents use dark text.
-        return luminance(accent()) > .38 ? 0xFF111116 : Color.WHITE;
+        return onAccentColor(accent());
+    }
+
+    public static int onAccentColor(int color) {
+        int dark = 0xFF111116;
+        double light = luminance(color);
+        double contrastWhite = 1.05 / (light + .05);
+        double contrastDark = (Math.max(light, luminance(dark)) + .05)
+                / (Math.min(light, luminance(dark)) + .05);
+        return contrastDark >= contrastWhite ? dark : Color.WHITE;
     }
 
     public int accentSoft() {
