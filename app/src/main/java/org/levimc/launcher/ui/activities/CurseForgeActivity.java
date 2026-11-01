@@ -1,6 +1,8 @@
 package org.levimc.launcher.ui.activities;
 
 import android.content.Intent;
+import android.net.Uri;
+import java.io.IOException;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
@@ -115,6 +117,13 @@ public class CurseForgeActivity extends BaseActivity {
         recyclerView = findViewById(R.id.mods_recycler);
         loadingProgress = findViewById(R.id.loading_progress);
         emptyMessage = findViewById(R.id.empty_message);
+        emptyMessage.setOnClickListener(v -> {
+            if (emptyMessage.getTag() != null) {
+                Intent browser = new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("https://www.curseforge.com/minecraft-bedrock"));
+                startActivity(browser);
+            }
+        });
 
         adapter = new CurseForgeContentAdapter(this::onContentClick, new CurseForgeContentAdapter.OnPageChangeListener() {
             @Override
@@ -232,6 +241,13 @@ public class CurseForgeActivity extends BaseActivity {
         emptyMessage.setVisibility(View.GONE);
         recyclerView.setVisibility(adapter.getItemCount() > 0 ? View.VISIBLE : View.INVISIBLE);
 
+        if (!CurseForgeClient.isConfigured()) {
+            loadingProgress.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.GONE);
+            showCurseForgeUnavailable("A integração CurseForge precisa de uma chave de API autorizada. Toque aqui para abrir o catálogo oficial no navegador.");
+            return;
+        }
+
         client.searchContent(query, category != null ? category.id : 0, "",
                 (requestedPage - 1) * PAGE_SIZE, PAGE_SIZE,
                 sort != null ? sort.field : CurseForgeClient.SORT_POPULARITY,
@@ -250,6 +266,7 @@ public class CurseForgeActivity extends BaseActivity {
                                 }
                                 adapter.setContents(result.data, requestedPage, totalPages);
                                 boolean empty = result.data.isEmpty();
+                                emptyMessage.setTag(null);
                                 emptyMessage.setText(R.string.no_mods_found);
                                 emptyMessage.setVisibility(empty ? View.VISIBLE : View.GONE);
                                 recyclerView.setVisibility(empty ? View.GONE : View.VISIBLE);
@@ -269,12 +286,11 @@ public class CurseForgeActivity extends BaseActivity {
                             loadingProgress.setVisibility(View.GONE);
                             if (adapter.getItemCount() == 0) {
                                 recyclerView.setVisibility(View.GONE);
-                                emptyMessage.setText(getString(R.string.error_message_format, error.getMessage()));
-                                emptyMessage.setVisibility(View.VISIBLE);
+                                showCurseForgeUnavailable(explainCurseForgeError(error));
                             } else {
                                 recyclerView.setVisibility(View.VISIBLE);
                                 android.widget.Toast.makeText(CurseForgeActivity.this,
-                                        getString(R.string.error_message_format, error.getMessage()),
+                                        explainCurseForgeError(error),
                                         android.widget.Toast.LENGTH_SHORT).show();
                             }
                         });
@@ -282,11 +298,36 @@ public class CurseForgeActivity extends BaseActivity {
                 });
     }
 
+    private void showCurseForgeUnavailable(String message) {
+        emptyMessage.setText(message + "\n\nABRIR CURSEFORGE ↗");
+        emptyMessage.setTag("open-web");
+        emptyMessage.setVisibility(View.VISIBLE);
+    }
+
+    private String explainCurseForgeError(Throwable error) {
+        if (error instanceof CurseForgeClient.CurseForgeHttpException) {
+            int status = ((CurseForgeClient.CurseForgeHttpException) error).getStatusCode();
+            if (status == 401 || status == 403) {
+                return "O servidor CurseForge recusou a autenticação (HTTP " + status +
+                        "). A chave do CRAVO pode estar ausente, inválida ou sem autorização.";
+            }
+            if (status == 429) return "Limite de solicitações do CurseForge atingido. Tente novamente depois.";
+            return "CurseForge indisponível (HTTP " + status + ").";
+        }
+        if (error != null && error.getMessage() != null &&
+                error.getMessage().contains("CRAVO_CURSEFORGE_KEY_NOT_CONFIGURED"))
+            return "A integração precisa de uma chave API autorizada.";
+        return "Não foi possível carregar o catálogo. Confira sua conexão.";
+    }
+
     private void onContentClick(Content content) {
         Intent intent = new Intent(this, ContentDetailsActivity.class);
         intent.putExtra(ContentDetailsActivity.EXTRA_CONTENT, content);
         startActivity(intent);
     }
+
+    @Override
+    protected boolean shouldSkipNavBar() { return true; }
 
     @Override
     protected void onDestroy() {

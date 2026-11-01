@@ -151,7 +151,7 @@ jobs:
       - name: Upload CRAVO Debug APK
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: CRAVO-alpha02-debug-apk
+          name: CRAVO-alpha03-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 14
