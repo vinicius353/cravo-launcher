@@ -1081,4 +1081,11 @@
     <string name="batch_transferring">Transferindo %1$d de %2$d…</string>
     <string name="batch_result">%1$d concluídos, %2$d falharam</string>
     <string name="choose_export_folder">Escolher pasta de exportação</string>
+    <string name="cravo_launch_brand">CRAVO</string>
+    <string name="cravo_launch_subtitle">MINECRAFT / RUNTIME NATIVO</string>
+    <string name="cravo_launch_log_title">DIAGNÓSTICO DE INICIALIZAÇÃO</string>
+    <string name="cravo_launch_copy">Copiar log</string>
+    <string name="cravo_launch_copy_done">Log de inicialização copiado</string>
+    <string name="cravo_launch_missing_library">Biblioteca nativa ausente. Inspecione a instância e confira se o APK/APKS contém os splits para a arquitetura deste aparelho.</string>
+    <string name="cravo_launch_loading_error_generic">Não foi possível preparar esta instância. Copie o log para diagnosticar o erro.</string>
 </resources>

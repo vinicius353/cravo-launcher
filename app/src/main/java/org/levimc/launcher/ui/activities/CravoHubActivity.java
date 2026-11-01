@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import org.levimc.launcher.ui.theme.CravoTheme;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
@@ -28,7 +29,7 @@ public final class CravoHubActivity extends BaseActivity {
     private static final int BG = 0xFF0C0B0E;
     private static final int TEXT = 0xFFF4EDF3;
     private static final int MUTED = 0xFFAA9BA7;
-    private static final int CORAL = 0xFFD93652;
+    private CravoTheme theme;
 
     private LinearLayout content;
     private String section;
@@ -41,6 +42,7 @@ public final class CravoHubActivity extends BaseActivity {
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
+        theme = new CravoTheme(this);
         section = getIntent().getStringExtra(EXTRA_SECTION);
         if (section == null) section = "packs";
 
@@ -64,7 +66,7 @@ public final class CravoHubActivity extends BaseActivity {
         LinearLayout.LayoutParams brandParams = new LinearLayout.LayoutParams(0, -2, 1);
         brandParams.leftMargin = dp(13);
         header.addView(brand, brandParams);
-        TextView alpha = text("ALPHA 0.3", 10, CORAL, true);
+        TextView alpha = text("ALPHA 0.3.1", 10, theme.accent(), true);
         alpha.setPadding(dp(12), dp(7), dp(12), dp(7));
         alpha.setBackground(glass(13));
         header.addView(alpha);
@@ -91,20 +93,14 @@ public final class CravoHubActivity extends BaseActivity {
         return view;
     }
 
-    private GradientDrawable glass(int radius) {
-        GradientDrawable drawable = new GradientDrawable(GradientDrawable.Orientation.TL_BR,
-                new int[]{0xFF322330, 0xFF201B23, 0xFF16151A});
-        drawable.setCornerRadius(dp(radius));
-        drawable.setStroke(dp(1), 0xFF59404E);
-        return drawable;
-    }
+    private GradientDrawable glass(int radius) { return theme.glass(radius); }
 
     private void spacing(int dp) {
         content.addView(new View(this), new LinearLayout.LayoutParams(1, dp(dp)));
     }
 
     private void heading(String caption, String headline, String description) {
-        TextView overline = text(caption, 11, CORAL, true);
+        TextView overline = text(caption, 11, theme.accent(), true);
         overline.setLetterSpacing(.15f);
         content.addView(overline);
         spacing(12);
@@ -142,12 +138,13 @@ public final class CravoHubActivity extends BaseActivity {
         content.removeAllViews();
         if ("mods".equals(section)) {
             heading("CRAVO / MÓDULOS", "Módulos", "Gerencie extensões e ferramentas disponíveis.");
-            card("Gerenciar mods", "Abrir ferramentas de mods nativos e extensões.", 
-                    () -> startActivity(new Intent(this, ModsFullscreenActivity.class)));
+            card("Gerenciar módulos", "Painel CRAVO: listar, ativar, configurar e importar.", 
+                    () -> startActivity(new Intent(this, CravoModulesActivity.class)));
             card("Mods externos", "Consultar e importar mods externos compatíveis.",
-                    () -> startActivity(new Intent(this, ExternalModsActivity.class)));
+                    () -> startActivity(new Intent(this, CravoModulesActivity.class)
+                            .putExtra(CravoModulesActivity.EXTRA_FILTER, "EXTERNOS")));
             card("CurseForge", "Procurar add-ons e pacotes no catálogo.",
-                    () -> startActivity(new Intent(this, CurseForgeActivity.class)));
+                    () -> startActivity(new Intent(this, CravoCurseForgeActivity.class)));
             card("Diagnóstico", "Copiar ou compartilhar registros de erro.", () -> CravoDiagnostics.show(this));
             return;
         }
@@ -162,6 +159,25 @@ public final class CravoHubActivity extends BaseActivity {
                     String display = version.displayName != null && !version.displayName.isEmpty() ?
                             version.displayName : version.directoryName;
                     String secondary = "Minecraft " + version.versionCode + (version.isInstalled ? " · instalado" : " · importado");
+                    if (!version.isInstalled) {
+                        card("Inspecionar · " + display,
+                                "Verificar APK base, splits, arquitetura e bibliotecas  ›",
+                                () -> {
+                                    org.levimc.launcher.core.versions.CravoPackageInspector.Result inspection =
+                                        org.levimc.launcher.core.versions.CravoPackageInspector.inspect(this, version);
+                                    new android.app.AlertDialog.Builder(this)
+                                        .setTitle(inspection.compatible ? "Estrutura compatível" : "Problema na instância")
+                                        .setMessage(inspection.description)
+                                        .setPositiveButton("OK", null)
+                                        .setNeutralButton("Copiar relatório", (d,w) -> {
+                                            android.content.ClipboardManager clipboard =
+                                                (android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+                                            if (clipboard != null) clipboard.setPrimaryClip(
+                                                android.content.ClipData.newPlainText("CRAVO inspection", inspection.description));
+                                        })
+                                        .show();
+                                });
+                    }
                     card(display, secondary, () -> {
                         manager.selectVersion(version);
                         Toast.makeText(this, "Versão selecionada: " + display, Toast.LENGTH_SHORT).show();
@@ -174,13 +190,7 @@ public final class CravoHubActivity extends BaseActivity {
             } else {
                 card("Carregando versões", "Volte e abra esta tela novamente.", () -> {});
             }
-            card("+  Importar APK / APKS", "Selecionar um arquivo do seu armazenamento.", () -> {
-                Intent intent = new Intent(this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                intent.putExtra("CRAVO_IMPORT_APK", true);
-                startActivity(intent);
-                finish();
-            });
+            card("+  Importar APK / APKS", "Abrir o importador nativo CRAVO.", () -> startActivity(new Intent(this, CravoApkImportActivity.class)));
             card("Backup e restauração", "Exportar ou restaurar instâncias de outras instalações.",
                     () -> startActivity(new Intent(this, InstancesActivity.class)));
             return;
@@ -192,10 +202,10 @@ public final class CravoHubActivity extends BaseActivity {
                 () -> openContent(ContentListActivity.TYPE_BEHAVIOR_PACKS));
         card("Mundos", "Mundos salvos na instância atual.",
                 () -> openContent(ContentListActivity.TYPE_WORLDS));
-        card("Gerenciamento avançado", "Importação, skins, capturas e servidores.",
+        card("Compatibilidade de conteúdos", "Ferramentas legadas para funções ainda não migradas.",
                 () -> startActivity(new Intent(this, ContentManagementActivity.class)));
         card("CurseForge", "Descobrir novos projetos e abrir o catálogo oficial.",
-                () -> startActivity(new Intent(this, CurseForgeActivity.class)));
+                () -> startActivity(new Intent(this, CravoCurseForgeActivity.class)));
     }
 
     private void openContent(int type) {
@@ -204,7 +214,7 @@ public final class CravoHubActivity extends BaseActivity {
             Toast.makeText(this, "Selecione uma versão do Minecraft primeiro", Toast.LENGTH_LONG).show();
             return;
         }
-        Intent intent = new Intent(this, ContentListActivity.class);
+        Intent intent = new Intent(this, CravoLibraryActivity.class);
         intent.putExtra(ContentListActivity.EXTRA_CONTENT_TYPE, type);
         startActivity(intent);
     }

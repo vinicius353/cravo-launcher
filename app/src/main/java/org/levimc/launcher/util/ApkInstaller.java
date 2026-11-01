@@ -297,7 +297,7 @@ public class ApkInstaller {
             if (info != null) {
                 String pkgName = info.packageName;
                 String vName = info.versionName;
-                if ("com.mojang.minecraftpe".equals(pkgName) && vName != null && !vName.isEmpty()) {
+                if (ApkUtils.isMinecraftArchive(apkFile, pkgName) && vName != null && !vName.isEmpty()) {
                     return vName;
                 }
             }

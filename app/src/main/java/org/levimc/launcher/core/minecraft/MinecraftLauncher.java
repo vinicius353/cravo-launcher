@@ -136,11 +136,22 @@ public class MinecraftLauncher {
 
             activity.runOnUiThread(() -> {
                 try {
-                    if (!PlayStoreValidator.isMinecraftFromPlayStore(activity)) {
-                        Log.w(TAG, "Launch denied: Minecraft is not verified as Play Store install");
+                    if (version.isInstalled && !PlayStoreValidator.isMinecraftFromPlayStore(activity)) {
+                        Log.w(TAG, "Installed Minecraft was not verified as a Play Store installation");
                         PlayStoreValidationDialog.showNotFromPlayStoreDialog(activity);
-                        notifyLaunchFailed(callback, new SecurityException("Minecraft is not verified as Play Store install"));
+                        notifyLaunchFailed(callback, new SecurityException("Installed Minecraft provenance could not be verified"));
                         return;
+                    }
+                    if (!version.isInstalled) {
+                        File importedBase = new File(version.versionDir, "base.apk.levi");
+                        if (!importedBase.isFile() || importedBase.length() == 0) {
+                            Log.e(TAG, "CRAVO_IMPORT_BASE_MISSING: " + importedBase);
+                            showLaunchErrorOnUi("A versão importada está incompleta: base.apk ausente.");
+                            notifyLaunchFailed(callback,
+                                    new IllegalStateException("CRAVO_IMPORT_BASE_MISSING"));
+                            return;
+                        }
+                        Log.i(TAG, "CRAVO_LOCAL_INSTANCE: using own imported package files, no installed Minecraft required");
                     }
                     launchMinecraftActivity(sourceIntent, version, false);
                     notifyLaunchStarted(callback);

@@ -86,7 +86,7 @@ android {
             buildConfigField "boolean", "IS_BETA", "false"
         }
         debug {
-            versionNameSuffix "-alpha03"
+            versionNameSuffix "-alpha031"
             debuggable false
             minifyEnabled true
             shrinkResources false

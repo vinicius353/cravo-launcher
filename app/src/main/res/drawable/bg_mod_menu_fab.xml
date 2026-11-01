@@ -3,10 +3,10 @@
     android:color="#80FFFFFF">
     <item>
         <shape android:shape="oval">
-            <solid android:color="#FFFFFF" />
+            <solid android:color="#19171D" />
             <stroke
                 android:width="2dp"
-                android:color="#66FFFFFF" />
+                android:color="#665D5662" />
         </shape>
     </item>
 </ripple>

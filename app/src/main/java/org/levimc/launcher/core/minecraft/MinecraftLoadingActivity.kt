@@ -2,6 +2,9 @@ package org.levimc.launcher.core.minecraft
 
 import android.animation.ValueAnimator
 import android.content.Intent
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.pm.ActivityInfo
 import android.content.res.ColorStateList
 import android.content.res.Configuration
@@ -17,12 +20,14 @@ import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.view.ViewTreeObserver
 import android.widget.Button
+import android.widget.Toast
 import android.widget.ProgressBar
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import org.levimc.launcher.R
 import org.levimc.launcher.ui.activities.BaseActivity
+import org.levimc.launcher.ui.theme.CravoTheme
 import org.levimc.launcher.ui.dialogs.CustomAlertDialog
 import org.levimc.launcher.util.PersonalizationManager
 import org.levimc.launcher.util.LauncherBackgroundController
@@ -43,6 +48,7 @@ class MinecraftLoadingActivity : BaseActivity(), MinecraftRuntimePreparer.Progre
     private lateinit var logView: TextView
     private lateinit var logScroll: ScrollView
     private lateinit var returnButton: Button
+    private lateinit var copyButton: Button
     private lateinit var trace: LaunchTrace
 
     @Volatile
@@ -73,10 +79,17 @@ class MinecraftLoadingActivity : BaseActivity(), MinecraftRuntimePreparer.Progre
         logView = findViewById(R.id.minecraftLaunchLog)
         logScroll = findViewById(R.id.minecraftLaunchLogScroll)
         returnButton = findViewById(R.id.minecraftLaunchReturn)
+        copyButton = findViewById(R.id.minecraftLaunchCopy)
 
         returnButton.setOnClickListener {
-            appendLog("Returning to launcher")
+            appendLog("Returning to CRAVO")
             returnToLauncher()
+        }
+        copyButton.setOnClickListener {
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+            clipboard?.setPrimaryClip(ClipData.newPlainText(
+                "CRAVO launch report", visibleLogMessages.joinToString("\n")))
+            Toast.makeText(this, R.string.cravo_launch_copy_done, Toast.LENGTH_SHORT).show()
         }
 
         applyLaunchTheme()
@@ -202,11 +215,18 @@ class MinecraftLoadingActivity : BaseActivity(), MinecraftRuntimePreparer.Progre
         if (isFinishing || isDestroyed) return
         val message = throwable.message ?: throwable.javaClass.simpleName
         updateProgress(100, getString(R.string.minecraft_loading_failed), null)
-        detailView.visibility = View.GONE
+        detailView.visibility = View.VISIBLE
+        detailView.text = if (message.contains("CRAVO_NATIVE_LIB_MISSING") ||
+            message.contains("libc++_shared.so not found")) {
+            getString(R.string.cravo_launch_missing_library)
+        } else {
+            getString(R.string.cravo_launch_loading_error_generic)
+        }
         trace.error("Launch failed", message)
         appendLog("Launch failed")
         appendLog(message)
         returnButton.visibility = View.VISIBLE
+        copyButton.visibility = View.VISIBLE
     }
 
     private fun animateProgressTo(targetProgress: Int) {
@@ -223,8 +243,8 @@ class MinecraftLoadingActivity : BaseActivity(), MinecraftRuntimePreparer.Progre
     }
 
     private fun applyLaunchTheme() {
-        val configuredAccent = PersonalizationManager(this).getAccentColor()
-        val accent = if (configuredAccent != 0) configuredAccent else ContextCompat.getColor(this, R.color.primary)
+        val palette = CravoTheme(this)
+        val accent = palette.accent()
         val accentTint = ColorStateList.valueOf(accent)
         val secondaryText = ContextCompat.getColor(this, R.color.text_secondary)
 
@@ -235,14 +255,13 @@ class MinecraftLoadingActivity : BaseActivity(), MinecraftRuntimePreparer.Progre
             progressBar.progressDrawable?.colorFilter = null
         }
 
-        logScroll.background = GradientDrawable().apply {
-            cornerRadius = dp(8).toFloat()
-            setColor(if (isDarkMode()) Color.argb(238, 16, 20, 18) else ContextCompat.getColor(this@MinecraftLoadingActivity, R.color.surface))
-            setStroke(dp(1), withAlpha(accent, if (isDarkMode()) 88 else 120))
-        }
-        logView.setTextColor(blendColors(ContextCompat.getColor(this, R.color.on_background), accent, if (isDarkMode()) 0.10f else 0.18f))
-        detailView.setTextColor(blendColors(secondaryText, accent, 0.18f))
+        logScroll.background = palette.glass(14)
+        logView.setTextColor(CravoTheme.TEXT)
+        detailView.setTextColor(CravoTheme.MUTED)
         returnButton.backgroundTintList = accentTint
+        returnButton.setTextColor(palette.onAccent())
+        copyButton.backgroundTintList = ColorStateList.valueOf(palette.accentSoft())
+        copyButton.setTextColor(palette.accent())
     }
 
     private fun isDarkMode(): Boolean {

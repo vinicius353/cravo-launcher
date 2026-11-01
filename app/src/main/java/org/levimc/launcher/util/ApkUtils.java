@@ -14,11 +14,39 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.Enumeration;
 import java.util.zip.ZipInputStream;
 
 public class ApkUtils {
     public interface LibExtractProgressCallback {
         void onBytesExtracted(int bytesExtracted);
+    }
+
+    /**
+     * Identify a Minecraft package by the usual package ID or by its characteristic
+     * game engine library / asset tree. This is read-only and does not modify
+     * the original APK or its internal authentication.
+     */
+    public static boolean isMinecraftArchive(File apk, String packageName) {
+        if ("com.mojang.minecraftpe".equals(packageName)) return true;
+        if (apk == null || !apk.isFile()) return false;
+        boolean engine = false;
+        boolean assets = false;
+        try (ZipFile zip = new ZipFile(apk)) {
+            Enumeration<? extends ZipEntry> entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                String name = entries.nextElement().getName();
+                if (name.startsWith("lib/") && name.endsWith("/libminecraftpe.so")) engine = true;
+                if (name.startsWith("assets/") &&
+                        (name.contains("resource_packs/") || name.contains("behavior_packs/")
+                                || name.contains("vanilla/"))) assets = true;
+                if (engine && assets) return true;
+            }
+            return engine; // stripped/split assets are common in otherwise valid APKs.
+        } catch (IOException error) {
+            return false;
+        }
     }
 
     public static String extractMinecraftVersionNameFromUri(Context context, Uri uri) {
@@ -28,7 +56,7 @@ public class ApkUtils {
             if (info != null) {
                 String packageName = info.packageName;
                 String versionName = info.versionName;
-                if ("com.mojang.minecraftpe".equals(packageName) && versionName != null && !versionName.isEmpty()) {
+                if (isMinecraftArchive(new File(uri.getPath()), packageName) && versionName != null && !versionName.isEmpty()) {
                     return "Minecraft_" + versionName;
                 }
             }
@@ -53,7 +81,7 @@ public class ApkUtils {
                 String packageName = info.packageName;
                 String versionName = info.versionName;
 
-                if ("com.mojang.minecraftpe".equals(packageName) && versionName != null && !versionName.isEmpty()) {
+                if (isMinecraftArchive(tempFile, packageName) && versionName != null && !versionName.isEmpty()) {
                     return "Minecraft_" + versionName;
                 }
             }
@@ -89,7 +117,7 @@ public class ApkUtils {
                         if (info != null) {
                             String packageName = info.packageName;
                             String versionName = info.versionName;
-                            if ("com.mojang.minecraftpe".equals(packageName) && versionName != null && !versionName.isEmpty()) {
+                            if (isMinecraftArchive(tempApkFile, packageName) && versionName != null && !versionName.isEmpty()) {
                                 return "Minecraft_" + versionName;
                             }
                         }
