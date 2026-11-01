@@ -1,47 +1,56 @@
 <div align="center">
 
+<img src="assets/cravo-icon.svg" alt="CRAVO Launcher icon" width="112" />
+
 # CRAVO
 
-**Minecraft Bedrock, do seu jeito.**
+**Minecraft Bedrock. Your way.**
 
-Launcher para Android com foco em **PvP**, **personalização** e uma experiência mais simples.
+A minimalist Android launcher project built around **PvP**, **customization**, and a cleaner experience.
 
-[Downloads](https://github.com/vinicius353/cravo-launcher/releases) · [Desenvolvimento](https://github.com/vinicius353/cravo-launcher/actions) · [Reportar problema](https://github.com/vinicius353/cravo-launcher/issues)
+[Releases](https://github.com/vinicius353/cravo-launcher/releases) · [Builds](https://github.com/vinicius353/cravo-launcher/actions) · [Issues](https://github.com/vinicius353/cravo-launcher/issues)
+
+**Android 9+** · **ARM64** · **In development**
 
 </div>
 
 ---
 
-## Sobre
+## About
 
-O **CRAVO Launcher** é um projeto independente para Minecraft Bedrock no Android, desenvolvido a partir da base aberta do LeviLauncher.
+**CRAVO Launcher** is an independent Minecraft Bedrock launcher project for Android, built on the open-source LeviLauncher codebase.
 
-A proposta é reunir ferramentas de gerenciamento e personalização em uma interface minimalista, com atenção especial à experiência de jogadores PvP.
+The goal is to create a straightforward, customizable experience with particular attention to PvP players and usability.
 
-> **Status:** em desenvolvimento. As ferramentas planejadas para PvP e otimização ainda não devem ser consideradas implementadas ou validadas.
+> **Development status:** Early development. PvP and performance features listed below are goals, not verified or completed features.
 
-## Objetivos
+## Project goals
 
-- **PvP:** controles e opções de personalização voltados à jogabilidade competitiva.
-- **Personalização:** evoluir a interface e as configurações do launcher.
-- **Desempenho:** investigar melhorias e oferecer ajustes testados, sem prometer aumento de FPS.
-- **Simplicidade:** organizar recursos importantes de maneira clara.
+- **PvP-first customization** — configurable controls and player-focused options.
+- **Clean interface** — fewer distractions, easier navigation.
+- **Performance options** — investigate measurable improvements and configurable settings.
+- **Game management** — build on the existing foundation for Minecraft versions and content.
 
-## Requisitos e instalação
+## Requirements
 
-A base atual do aplicativo utiliza:
+The current codebase targets:
 
-- **Android 9 ou superior** (API 28+).
-- Dispositivo **ARM64**.
-- Uma cópia legítima do **Minecraft Bedrock** instalada pela Google Play.
+- **Android 9.0+** (API 28+).
+- **ARM64** devices.
+- An officially licensed copy of **Minecraft Bedrock Edition**, installed from Google Play.
 
-O suporte real a dispositivos e versões do Minecraft depende de testes. Para verificar builds de desenvolvimento, acesse [GitHub Actions](https://github.com/vinicius353/cravo-launcher/actions) e procure um artifact de APK nas execuções concluídas com sucesso.
+Compatibility with specific devices and Minecraft versions is subject to testing.
 
-**Atenção:** builds de desenvolvimento podem apresentar falhas e não representam uma versão estável. A página [Releases](https://github.com/vinicius353/cravo-launcher/releases) será usada para versões publicadas oficialmente.
+## Get a build
 
-## Desenvolvimento
+- **[Releases](https://github.com/vinicius353/cravo-launcher/releases)** — official published versions, when available.
+- **[GitHub Actions](https://github.com/vinicius353/cravo-launcher/actions)** — development builds; successful workflow runs may provide APK artifacts.
 
-Para compilar o projeto a partir do código-fonte:
+Development APKs may be unstable and may require additional setup. A successful code compilation does not necessarily mean the application is ready for everyday use.
+
+## Build from source
+
+You'll need JDK 21, Android SDK, Android NDK, and the dependencies configured by Gradle.
 
 ```bash
 git clone --recurse-submodules https://github.com/vinicius353/cravo-launcher.git
@@ -49,16 +58,16 @@ cd cravo-launcher
 ./gradlew assembleDebug
 ```
 
-São necessários **JDK 21**, Android SDK, NDK e as dependências configuradas pelo Gradle. A compilação também pode exigir configurações de serviços externos; confira os workflows e logs caso falhe.
+Some build configurations require external service credentials. Refer to the CI workflows and build logs when troubleshooting.
 
-Contribuições e relatos de bugs são bem-vindos nas [Issues](https://github.com/vinicius353/cravo-launcher/issues).
+Found a bug or have an idea? [Open an issue](https://github.com/vinicius353/cravo-launcher/issues).
 
 ---
 
-## Créditos e licença
+## Credits & license
 
-O **CRAVO Launcher** é uma adaptação independente baseada em [LeviLauncher para Android (LeviLaunchroid)](https://github.com/LiteLDev/LeviLaunchroid), desenvolvido pelo projeto [LeviMC / LiteLDev](https://github.com/LiteLDev) e seus [contribuidores](https://github.com/LiteLDev/LeviLaunchroid/graphs/contributors). A base original e seus autores mantêm seus respectivos créditos e direitos.
+CRAVO Launcher is an independent derivative of [LeviLauncher for Android (LeviLaunchroid)](https://github.com/LiteLDev/LeviLaunchroid), created by [LeviMC / LiteLDev](https://github.com/LiteLDev) and its [contributors](https://github.com/LiteLDev/LeviLaunchroid/graphs/contributors). All original attribution and copyright notices remain applicable.
 
-O código é distribuído sob a **Apache License 2.0**, conforme o arquivo [LICENSE](LICENSE). Avisos de licença, copyright e atribuição presentes no código-fonte devem ser preservados conforme os termos aplicáveis.
+The project uses the **Apache License 2.0**. See [LICENSE](LICENSE) for its terms; retain applicable copyright, attribution, and license notices when redistributing or modifying the software.
 
-**Minecraft** é uma marca da Mojang Studios/Microsoft. O CRAVO não é afiliado, endossado ou patrocinado por Mojang ou Microsoft.
+**Minecraft** is a trademark of Mojang Studios / Microsoft. CRAVO Launcher is not affiliated with, endorsed by, or sponsored by Mojang or Microsoft.
