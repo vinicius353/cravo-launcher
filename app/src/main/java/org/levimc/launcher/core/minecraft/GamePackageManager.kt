@@ -182,15 +182,18 @@ class GamePackageManager private constructor(
         report("Minecraft library cache miss: extracting libraries")
 
         if (version != null && !version.isInstalled) {
-            val apkPaths = apkFiles.map { it.absolutePath }
-            apkPaths.forEach { extractFromApk(it, outputDir, getDeviceAbi()) }
-            if (cacheRequiredLibs.any { !File(outputDir, it).exists() }) {
-                Log.w(TAG, "Primary ABI ${getDeviceAbi()} libraries missing, trying fallback ABIs")
-                report("Primary ABI ${getDeviceAbi()} libraries missing, trying fallback ABIs")
-                val fallbackAbis = listOf("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
-                fallbackAbis.filter { it != getDeviceAbi() }.forEach { abi ->
-                    apkPaths.forEach { extractFromApk(it, outputDir, abi) }
-                }
+            val deviceAbi = getDeviceAbi()
+            // Inspect every imported split: some APKS tools rename the ABI package
+            // without keeping 'arm' or 'x86' in its filename.
+            apkFiles.forEach { extractFromApk(it.absolutePath, outputDir, deviceAbi) }
+            // Do NOT copy a 32-bit library to a 64-bit cache (or vice versa).
+            // A missing library is diagnosed below, not silently substituted.
+            val missingAfterExtraction = cacheRequiredLibs.filter {
+                !File(outputDir, it).isFile || File(outputDir, it).length() <= 0L
+            }
+            if (missingAfterExtraction.isNotEmpty()) {
+                report("CRAVO native check: required ${missingAfterExtraction.joinToString()} absent for $deviceAbi")
+                report("Imported APKs scanned: ${apkFiles.joinToString { it.name }}")
             }
         } else {
             val appInfo = packageContext.applicationInfo
@@ -295,10 +298,6 @@ class GamePackageManager private constructor(
             Log.w(TAG, "APK file does not exist: $apkPath")
             return
         }
-        if (!apkPath.contains("arm") && !apkPath.contains("x86") && !apkPath.contains("base.apk")) {
-            return
-        }
-
         try {
             ZipFile(apkPath).use { zip ->
                 val abiPath = "lib/$abi"
@@ -319,7 +318,8 @@ class GamePackageManager private constructor(
                 }
             }
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to extract libraries from $apkPath: ${e.message}")
+            Log.w(TAG, "Failed to extract libraries from $apkPath: ${e.message}", e)
+            report("CRAVO library extraction failed for ${apkFile.name}: ${e.message}")
         }
     }
 
@@ -366,11 +366,23 @@ class GamePackageManager private constructor(
 
     private fun verifyLibraries(dir: File) {
         val missing = getCacheRequiredLibs().filterNot {
-            File(dir, it).let { f -> f.exists() && f.length() > 0 }
+            File(dir, it).let { f -> f.isFile && f.length() > 0L }
         }
         if (missing.isNotEmpty()) {
             Log.w(TAG, "Missing libraries in $dir: ${missing.joinToString()}")
-            report("Missing libraries in ${dir.absolutePath}: ${missing.joinToString()}")
+            report("CRAVO: Missing native libraries: ${missing.joinToString()}")
+        }
+        if (version != null && !version.isInstalled) {
+            val critical = listOf("libc++_shared.so", "libminecraftpe.so").filter {
+                File(dir, it).let { f -> !f.isFile || f.length() == 0L }
+            }
+            if (critical.isNotEmpty()) {
+                throw IllegalStateException(
+                    "CRAVO_NATIVE_LIB_MISSING: ${critical.joinToString()} (" +
+                        getDeviceAbi() + "). The selected APK/APKS is missing these " +
+                        "libraries for this architecture, or extraction failed. " +
+                        "Check the imported APKS splits and the CRAVO instance inspector.")
+            }
         }
     }
 
@@ -685,7 +697,7 @@ class GamePackageManager private constructor(
 
     companion object {
         private const val TAG = "GamePackageManager"
-        private const val EXTRACTOR_VERSION = 2
+        private const val EXTRACTOR_VERSION = 3
 
         @Volatile
         private var instance: GamePackageManager? = null
