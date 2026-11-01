@@ -166,6 +166,10 @@
             android:configChanges="fontScale|density|smallestScreenSize|screenSize|uiMode|screenLayout|orientation|navigation|keyboardHidden|keyboard|touchscreen|locale|mnc|mcc"
             tools:ignore="DiscouragedApi" />
 
+        <!-- Native CRAVO screens -->
+        <activity android:name=".ui.activities.CravoHubActivity"
+            android:screenOrientation="sensorPortrait" android:exported="false" />
+
         <!-- Accounts Management -->
         <activity
             android:name="org.levimc.launcher.ui.activities.AccountsActivity"
@@ -220,7 +224,7 @@
         <activity
             android:name="org.levimc.launcher.ui.activities.CurseForgeActivity"
             android:theme="@style/Base.Theme.FullScreen"
-            android:screenOrientation="sensorLandscape"
+            android:screenOrientation="sensorPortrait"
             android:configChanges="fontScale|density|smallestScreenSize|screenSize|uiMode|screenLayout|orientation|navigation|keyboardHidden|keyboard|touchscreen|locale|mnc|mcc"
             android:exported="false"
             tools:ignore="DiscouragedApi" />

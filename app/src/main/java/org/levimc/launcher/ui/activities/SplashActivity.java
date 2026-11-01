@@ -45,6 +45,7 @@ public class SplashActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         binding = ActivitySplashBinding.inflate(getLayoutInflater());
         binding.tvAppName.setText("CRAVO");
+        binding.tvAppName.setTextColor(0xFFD93652);
         setContentView(binding.getRoot());
 
         applySplashTheme();
@@ -151,7 +152,7 @@ public class SplashActivity extends BaseActivity {
     }
 
     private void applySplashTheme() {
-        int accent = resolveAccentColor();
+        int accent = getSharedPreferences("cravo_ui", MODE_PRIVATE).getInt("accent", 0xFFD93652);
         binding.tvAppName.setTextColor(accent);
         binding.logoGlow.setBackground(createRadialGlow(accent));
         binding.orbitRing.setBackground(createOrbitRing(accent));

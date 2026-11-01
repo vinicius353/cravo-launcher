@@ -22,6 +22,19 @@ public class CurseForgeClient {
     private static final String BASE_URL = "https://api.curseforge.com";
     private static final String API_KEY = BuildConfig.CURSEFORGE_API_KEY;
 
+    public static boolean isConfigured() {
+        return API_KEY != null && !API_KEY.trim().isEmpty();
+    }
+
+    public static final class CurseForgeHttpException extends IOException {
+        private final int statusCode;
+        public CurseForgeHttpException(int statusCode) {
+            super("CurseForge HTTP " + statusCode);
+            this.statusCode = statusCode;
+        }
+        public int getStatusCode() { return statusCode; }
+    }
+
     public static final int GAME_ID_MINECRAFT = 78022;
 
     public static final String SORT_POPULARITY = "2";
@@ -56,6 +69,10 @@ public class CurseForgeClient {
     }
 
     public void searchContent(String query, int classId, String version, int index, int pageSize, String sortField, String sortOrder, CurseForgeCallback<ContentSearchResponse> callback) {
+        if (!isConfigured()) {
+            callback.onError(new IOException("CRAVO_CURSEFORGE_KEY_NOT_CONFIGURED"));
+            return;
+        }
         HttpUrl.Builder urlBuilder = HttpUrl.parse(BASE_URL + "/v1/mods/search").newBuilder();
         urlBuilder.addQueryParameter("gameId", String.valueOf(GAME_ID_MINECRAFT));
         urlBuilder.addQueryParameter("sortField", sortField != null ? sortField : SORT_POPULARITY);
@@ -88,7 +105,9 @@ public class CurseForgeClient {
             @Override
             public void onResponse(Call call, Response response) {
                 if (!response.isSuccessful()) {
-                    callback.onError(new IOException("Unexpected code " + response));
+                    int status = response.code();
+                    response.close();
+                    callback.onError(new CurseForgeHttpException(status));
                     return;
                 }
                 
@@ -104,6 +123,10 @@ public class CurseForgeClient {
     }
 
     public void getContentDescription(int contentId, CurseForgeCallback<String> callback) {
+        if (!isConfigured()) {
+            callback.onError(new IOException("CRAVO_CURSEFORGE_KEY_NOT_CONFIGURED"));
+            return;
+        }
         String url = BASE_URL + "/v1/mods/" + contentId + "/description";
         Request request = new Request.Builder()
                 .url(url)
@@ -120,7 +143,9 @@ public class CurseForgeClient {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    callback.onError(new IOException("Unexpected code " + response));
+                    int status = response.code();
+                    response.close();
+                    callback.onError(new CurseForgeHttpException(status));
                     return;
                 }
 
@@ -136,6 +161,10 @@ public class CurseForgeClient {
     }
 
     public void getModFiles(int modId, int index, int pageSize, CurseForgeCallback<ModFilesResponse> callback) {
+        if (!isConfigured()) {
+            callback.onError(new IOException("CRAVO_CURSEFORGE_KEY_NOT_CONFIGURED"));
+            return;
+        }
         HttpUrl.Builder urlBuilder = HttpUrl.parse(BASE_URL + "/v1/mods/" + modId + "/files").newBuilder();
         urlBuilder.addQueryParameter("index", String.valueOf(index));
         urlBuilder.addQueryParameter("pageSize", String.valueOf(pageSize));
@@ -155,7 +184,9 @@ public class CurseForgeClient {
             @Override
             public void onResponse(Call call, Response response) {
                 if (!response.isSuccessful()) {
-                    callback.onError(new IOException("Unexpected code " + response));
+                    int status = response.code();
+                    response.close();
+                    callback.onError(new CurseForgeHttpException(status));
                     return;
                 }
 

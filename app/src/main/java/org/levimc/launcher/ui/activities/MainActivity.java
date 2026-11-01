@@ -156,6 +156,10 @@ import okhttp3.OkHttpClient;
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
+        if (intent != null && intent.getBooleanExtra("CRAVO_IMPORT_APK", false)) {
+            intent.removeExtra("CRAVO_IMPORT_APK");
+            startApkFilePicker();
+        }
         handleVersionDependentIntent();
     }
 
@@ -168,9 +172,9 @@ import okhttp3.OkHttpClient;
             @Override public void play() { launchGame(); }
             @Override public void pickVersion() { showCravoVersionPicker(); }
             @Override public void importApk() { startApkFilePicker(); }
-            @Override public void openVersions() { startActivity(new Intent(MainActivity.this, InstancesActivity.class)); }
-            @Override public void openMods() { openModsFullscreen(); }
-            @Override public void openContent() { openContentManagement(); }
+            @Override public void openVersions() { startActivity(CravoHubActivity.forSection(MainActivity.this, "versions")); }
+            @Override public void openMods() { startActivity(CravoHubActivity.forSection(MainActivity.this, "mods")); }
+            @Override public void openContent() { startActivity(CravoHubActivity.forSection(MainActivity.this, "packs")); }
             @Override public void openCurseForge() { startActivity(new Intent(MainActivity.this, CurseForgeActivity.class)); }
             @Override public void openSettings() { startActivity(new Intent(MainActivity.this, SettingsActivity.class)); }
             @Override public void openAccounts() { startActivity(new Intent(MainActivity.this, AccountsActivity.class)); }

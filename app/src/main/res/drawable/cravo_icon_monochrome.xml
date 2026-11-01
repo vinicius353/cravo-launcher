@@ -4,10 +4,12 @@
     android:height="108dp"
     android:viewportWidth="512"
     android:viewportHeight="512">
+    <group android:pivotX="256" android:pivotY="256" android:scaleX="0.74" android:scaleY="0.74">
     <path android:fillColor="#FFFFFFFF"
         android:pathData="M355,126H205l-79,80v100l79,80h150v-62H232l-45,-44v-48l45,-44h123z" />
     <path android:fillColor="#FFFFFFFF"
         android:pathData="M349,101l50,50 -50,50z" />
     <path android:fillColor="#FFFFFFFF"
         android:pathData="M355,254l54,35 -54,35z" />
+    </group>
 </vector>
