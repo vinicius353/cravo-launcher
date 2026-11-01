@@ -326,7 +326,7 @@ public final class CravoDashboard extends LinearLayout {
 
     private void renderModules() {
         title("Módulos", "Ferramentas instaladas e atalhos do launcher.");
-        card("Gerenciar mods", "Abrir a lista nativa de mods  ›", actions::openMods);
+        card("Gerenciar módulos", "Abrir o gerenciador CRAVO  ›", actions::openMods);
         card("Versões", "Escolher instância ou importar um APK  ›", actions::openVersions);
         card("Logcat / diagnóstico", "Gerar relatório para compartilhar  ›", actions::openDiagnostics);
     }

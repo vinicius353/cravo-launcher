@@ -138,8 +138,8 @@ public final class CravoHubActivity extends BaseActivity {
         content.removeAllViews();
         if ("mods".equals(section)) {
             heading("CRAVO / MÓDULOS", "Módulos", "Gerencie extensões e ferramentas disponíveis.");
-            card("Gerenciar mods", "Abrir ferramentas de mods nativos e extensões.", 
-                    () -> startActivity(new Intent(this, ModsFullscreenActivity.class)));
+            card("Gerenciar módulos", "Painel CRAVO: listar, ativar, configurar e importar.", 
+                    () -> startActivity(new Intent(this, CravoModulesActivity.class)));
             card("Mods externos", "Consultar e importar mods externos compatíveis.",
                     () -> startActivity(new Intent(this, ExternalModsActivity.class)));
             card("CurseForge", "Procurar add-ons e pacotes no catálogo.",
