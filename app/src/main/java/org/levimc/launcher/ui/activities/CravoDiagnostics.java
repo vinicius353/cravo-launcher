@@ -177,18 +177,24 @@ public final class CravoDiagnostics {
             try {
                 process = new ProcessBuilder("logcat", "-d", "-v", "threadtime",
                         "--pid=" + android.os.Process.myPid()).redirectErrorStream(true).start();
-                StringBuilder lines = new StringBuilder();
-                int count = 0;
+                java.util.ArrayDeque<String> tail = new java.util.ArrayDeque<>();
+                int totalChars = 0;
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                         process.getInputStream(), StandardCharsets.UTF_8))) {
                     String line;
-                    while ((line = reader.readLine()) != null && count < MAX_LOGCAT_LINES
-                            && lines.length() < MAX_SECTION_CHARS) {
-                        lines.append(line).append('\n');
-                        count++;
+                    while ((line = reader.readLine()) != null) {
+                        tail.addLast(line);
+                        totalChars += line.length() + 1;
+                        while (tail.size() > MAX_LOGCAT_LINES || totalChars > MAX_SECTION_CHARS) {
+                            String removed = tail.removeFirst();
+                            totalChars -= removed.length() + 1;
+                        }
                     }
                 }
-                return lines.length() > 0 ? lines.toString() : "No accessible logcat entries.";
+                if (tail.isEmpty()) return "No accessible logcat entries.";
+                StringBuilder lines = new StringBuilder();
+                for (String line : tail) lines.append(line).append('\n');
+                return lines.toString();
             } catch (Exception e) {
                 return "Logcat unavailable: " + e.getClass().getSimpleName();
             } finally {
