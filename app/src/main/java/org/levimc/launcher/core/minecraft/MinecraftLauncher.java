@@ -38,6 +38,13 @@ public class MinecraftLauncher {
         this.context = context;
     }
 
+    public static String getRuntimeAbi() {
+        String[] candidates = android.os.Process.is64Bit()
+                ? Build.SUPPORTED_64_BIT_ABIS : Build.SUPPORTED_32_BIT_ABIS;
+        if (candidates.length == 0) throw new IllegalStateException("No ABI for current process");
+        return candidates[0];
+    }
+
     public static String abiToSystemLibDir(String abi) {
         if ("arm64-v8a".equals(abi)) return "arm64";
         if ("armeabi-v7a".equals(abi)) return "arm";
@@ -57,7 +64,7 @@ public class MinecraftLauncher {
         File apkFile = new File(version.versionDir, "base.apk.levi");
         fakeInfo.sourceDir = apkFile.getAbsolutePath();
         fakeInfo.publicSourceDir = fakeInfo.sourceDir;
-        String systemAbi = abiToSystemLibDir(Build.SUPPORTED_ABIS[0]);
+        String systemAbi = getRuntimeAbi();
         File dstLibDir = getRuntimeLibAbiDir(context, getStorageProfileId(version), systemAbi);
         fakeInfo.nativeLibraryDir = dstLibDir.getAbsolutePath();
         fakeInfo.packageName = packageName;

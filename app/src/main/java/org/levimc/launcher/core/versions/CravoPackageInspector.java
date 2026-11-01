@@ -65,7 +65,7 @@ public final class CravoPackageInspector {
             Collections.addAll(packages, splits);
         }
 
-        String abi = Build.SUPPORTED_ABIS.length > 0 ? Build.SUPPORTED_ABIS[0] : "arm64-v8a";
+        String abi = MinecraftLauncher.getRuntimeAbi();
         report.append("Arquitetura principal: ").append(abi).append('\n');
         report.append("APKs encontrados: ").append(packages.size()).append('\n');
         Map<String, Set<String>> libraries = new LinkedHashMap<>();
@@ -90,8 +90,10 @@ public final class CravoPackageInspector {
             }
         }
 
-        File cache = MinecraftLauncher.getRuntimeLibAbiDir(context, version.directoryName, abi);
+        File cache = MinecraftLauncher.getRuntimeLibAbiDir(context, MinecraftLauncher.getStorageProfileId(version), abi);
         if (!manifest) report.append("ERRO: manifesto Android ausente no APK principal.\n");
+        report.append("Cache do runtime: ").append(cache.getAbsolutePath()).append('\n');
+        for (File apk : packages) report.append("APK: ").append(apk.getAbsolutePath()).append('\n');
         report.append("\nBibliotecas do jogo:\n");
         boolean missingCritical = false;
         for (String lib : CRITICAL) {
@@ -99,7 +101,7 @@ public final class CravoPackageInspector {
             Set<String> availableAbis = libraries.getOrDefault(lib, Collections.emptySet());
             boolean found = cacheFound || availableAbis.contains(abi);
             report.append(found ? "[OK] " : "[FALTA] ").append(lib);
-            if (cacheFound) report.append(" · cache arm64");
+            if (cacheFound) report.append(" · cache ").append(abi);
             else if (availableAbis.contains(abi)) report.append(" · dentro do APK/APKS");
             if (!availableAbis.isEmpty()) report.append(" · ABIs: ").append(availableAbis);
             report.append('\n');

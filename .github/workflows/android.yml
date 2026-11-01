@@ -148,6 +148,9 @@ jobs:
         if: env.HAS_GOOGLE_SERVICES == 'false'
         run: ./gradlew :app:assembleDebug
 
+      - name: Test native cache publication
+        run: ./gradlew :app:testDebugUnitTest --tests org.levimc.launcher.util.NativeLibraryPublisherTest
+
       - name: Upload CRAVO Debug APK
         uses: actions/upload-artifact@v4.6.2
         with:
