@@ -73,7 +73,7 @@ public final class CravoDashboard extends LinearLayout {
         LayoutParams nameLp = new LayoutParams(0, -2, 1);
         nameLp.leftMargin = dp(11);
         header.addView(name, nameLp);
-        TextView alpha = text("ALPHA 0.2", 10, accent, true);
+        TextView alpha = text("ALPHA 0.3", 10, accent, true);
         alpha.setPadding(dp(12), dp(7), dp(12), dp(7));
         alpha.setBackground(round(Color.rgb(37, 24, 31), 24, 1, Color.rgb(82, 41, 56)));
         header.addView(alpha);
@@ -239,7 +239,7 @@ public final class CravoDashboard extends LinearLayout {
             body.addView(text("Carregando gerenciador de versões...", 11, MUTED, false));
         }
         addSpace(body, 7);
-        TextView foot = text("CRAVO · baseado no LeviLauncher", 11, MUTED, false);
+        TextView foot = text("CRAVO · Powered by open-source components", 11, MUTED, false);
         foot.setGravity(Gravity.CENTER);
         body.addView(foot);
     }
@@ -318,7 +318,7 @@ public final class CravoDashboard extends LinearLayout {
         card("Configurações avançadas", "Abrir ajustes existentes do LeviLauncher  ›", actions::openSettings);
         card("Ferramentas originais", "Acessar a interface anterior quando necessário  ›", actions::openAdvanced);
         addSpace(body, 5);
-        body.addView(text("CRAVO Alpha 0.2 · Apache 2.0 · LeviMC credits preserved", 11, MUTED, false));
+        body.addView(text("CRAVO Alpha 0.3 · Apache 2.0 · LeviMC credits preserved", 11, MUTED, false));
     }
 
     private void addNavigation() {
