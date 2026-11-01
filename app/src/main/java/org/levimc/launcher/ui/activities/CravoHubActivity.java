@@ -143,7 +143,7 @@ public final class CravoHubActivity extends BaseActivity {
             card("Mods externos", "Consultar e importar mods externos compatíveis.",
                     () -> startActivity(new Intent(this, ExternalModsActivity.class)));
             card("CurseForge", "Procurar add-ons e pacotes no catálogo.",
-                    () -> startActivity(new Intent(this, CurseForgeActivity.class)));
+                    () -> startActivity(new Intent(this, CravoCurseForgeActivity.class)));
             card("Diagnóstico", "Copiar ou compartilhar registros de erro.", () -> CravoDiagnostics.show(this));
             return;
         }
@@ -210,7 +210,7 @@ public final class CravoHubActivity extends BaseActivity {
         card("Compatibilidade de conteúdos", "Ferramentas legadas para funções ainda não migradas.",
                 () -> startActivity(new Intent(this, ContentManagementActivity.class)));
         card("CurseForge", "Descobrir novos projetos e abrir o catálogo oficial.",
-                () -> startActivity(new Intent(this, CurseForgeActivity.class)));
+                () -> startActivity(new Intent(this, CravoCurseForgeActivity.class)));
     }
 
     private void openContent(int type) {

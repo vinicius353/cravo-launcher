@@ -175,7 +175,7 @@ import okhttp3.OkHttpClient;
             @Override public void openVersions() { startActivity(CravoHubActivity.forSection(MainActivity.this, "versions")); }
             @Override public void openMods() { startActivity(CravoHubActivity.forSection(MainActivity.this, "mods")); }
             @Override public void openContent() { startActivity(CravoHubActivity.forSection(MainActivity.this, "packs")); }
-            @Override public void openCurseForge() { startActivity(new Intent(MainActivity.this, CurseForgeActivity.class)); }
+            @Override public void openCurseForge() { startActivity(new Intent(MainActivity.this, CravoCurseForgeActivity.class)); }
             @Override public void openSettings() { startActivity(CravoWorkspaceActivity.forSection(MainActivity.this, "settings")); }
             @Override public void openAccounts() { startActivity(CravoWorkspaceActivity.forSection(MainActivity.this, "accounts")); }
             @Override public void openDiagnostics() { CravoDiagnostics.show(MainActivity.this); }
